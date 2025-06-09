@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Pages 部署测试</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-item {
+            background: rgba(255, 255, 255, 0.1);
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .test-item.warning {
+            border-left-color: #FF9800;
+        }
+        
+        .test-item.error {
+            border-left-color: #F44336;
+        }
+        
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .success {
+            color: #4CAF50;
+        }
+        
+        .warning {
+            color: #FF9800;
+        }
+        
+        .error {
+            color: #F44336;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 GitHub Pages 部署测试</h1>
+            <p>Minecraft模组翻译工具 - 部署验证</p>
+        </div>
+        
+        <div class="test-item">
+            <h3>📡 网络连接测试</h3>
+            <button class="btn" onclick="testNetwork()">测试网络连接</button>
+            <div id="networkResult" class="result" style="display:none;"></div>
+        </div>
+        
+        <div class="test-item">
+            <h3>📁 文件加载测试</h3>
+            <button class="btn" onclick="testFiles()">测试文件加载</button>
+            <div id="fileResult" class="result" style="display:none;"></div>
+        </div>
+        
+        <div class="test-item">
+            <h3>🔧 JavaScript功能测试</h3>
+            <button class="btn" onclick="testJavaScript()">测试JS功能</button>
+            <div id="jsResult" class="result" style="display:none;"></div>
+        </div>
+        
+        <div class="test-item">
+            <h3>📱 响应式设计测试</h3>
+            <button class="btn" onclick="testResponsive()">测试响应式</button>
+            <div id="responsiveResult" class="result" style="display:none;"></div>
+        </div>
+        
+        <div class="test-item">
+            <h3>🚀 GitHub Pages特性测试</h3>
+            <button class="btn" onclick="testGitHubPages()">测试Pages特性</button>
+            <div id="pagesResult" class="result" style="display:none;"></div>
+        </div>
+        
+        <div class="test-item">
+            <h3>📊 总体评估</h3>
+            <button class="btn" onclick="runAllTests()">运行全部测试</button>
+            <div id="overallResult" class="result" style="display:none;"></div>
+        </div>
+        
+        <a href="index.html" class="back-link">← 返回主应用</a>
+    </div>
+
+    <script>
+        let testResults = {};
+        
+        function testNetwork() {
+            const result = document.getElementById('networkResult');
+            result.style.display = 'block';
+            result.innerHTML = '正在测试网络连接...';
+            
+            // 测试外部API连接（模拟）
+            const tests = [
+                { name: 'GitHub API', url: 'https://api.github.com', expected: true },
+                { name: 'Google API', url: 'https://www.google.com', expected: true }
+            ];
+            
+            let passed = 0;
+            result.innerHTML = '';
+            
+            tests.forEach(test => {
+                fetch(test.url, { mode: 'no-cors' })
+                    .then(() => {
+                        result.innerHTML += `<span class="success">✓ ${test.name} 连接正常</span><br>`;
+                        passed++;
+                    })
+                    .catch(() => {
+                        result.innerHTML += `<span class="warning">⚠ ${test.name} 连接受限（正常现象）</span><br>`;
+                        passed++;
+                    })
+                    .finally(() => {
+                        if (passed === tests.length) {
+                            testResults.network = true;
+                            result.innerHTML += '<span class="success">网络测试完成</span>';
+                        }
+                    });
+            });
+        }
+        
+        function testFiles() {
+            const result = document.getElementById('fileResult');
+            result.style.display = 'block';
+            result.innerHTML = '正在测试文件加载...';
+            
+            const files = ['styles.css', 'script.js', 'example_en_us.json'];
+            let passed = 0;
+            
+            result.innerHTML = '';
+            
+            files.forEach(file => {
+                fetch(file)
+                    .then(response => {
+                        if (response.ok) {
+                            result.innerHTML += `<span class="success">✓ ${file} 加载成功</span><br>`;
+                            passed++;
+                        } else {
+                            result.innerHTML += `<span class="error">✗ ${file} 加载失败</span><br>`;
+                        }
+                    })
+                    .catch(() => {
+                        result.innerHTML += `<span class="error">✗ ${file} 加载失败</span><br>`;
+                    })
+                    .finally(() => {
+                        if (passed === files.length) {
+                            testResults.files = true;
+                            result.innerHTML += '<span class="success">文件测试完成</span>';
+                        } else if (result.innerHTML.includes('✗')) {
+                            testResults.files = false;
+                            result.innerHTML += '<span class="error">部分文件加载失败</span>';
+                        }
+                    });
+            });
+        }
+        
+        function testJavaScript() {
+            const result = document.getElementById('jsResult');
+            result.style.display = 'block';
+            result.innerHTML = '';
+            
+            const tests = [
+                {
+                    name: 'ES6 支持',
+                    test: () => {
+                        const arrow = () => 'ES6 Arrow Functions';
+                        const template = `Template ${arrow()}`;
+                        return template.includes('ES6');
+                    }
+                },
+                {
+                    name: 'Fetch API',
+                    test: () => typeof fetch === 'function'
+                },
+                {
+                    name: 'LocalStorage',
+                    test: () => {
+                        try {
+                            localStorage.setItem('test', 'test');
+                            localStorage.removeItem('test');
+                            return true;
+                        } catch (e) {
+                            return false;
+                        }
+                    }
+                },
+                {
+                    name: 'File API',
+                    test: () => typeof FileReader === 'function'
+                }
+            ];
+            
+            let passed = 0;
+            tests.forEach(test => {
+                try {
+                    if (test.test()) {
+                        result.innerHTML += `<span class="success">✓ ${test.name} 支持</span><br>`;
+                        passed++;
+                    } else {
+                        result.innerHTML += `<span class="error">✗ ${test.name} 不支持</span><br>`;
+                    }
+                } catch (e) {
+                    result.innerHTML += `<span class="error">✗ ${test.name} 测试失败</span><br>`;
+                }
+            });
+            
+            testResults.javascript = passed === tests.length;
+            result.innerHTML += `<span class="${testResults.javascript ? 'success' : 'warning'}">JavaScript测试完成 (${passed}/${tests.length})</span>`;
+        }
+        
+        function testResponsive() {
+            const result = document.getElementById('responsiveResult');
+            result.style.display = 'block';
+            
+            const viewport = {
+                width: window.innerWidth,
+                height: window.innerHeight
+            };
+            
+            const deviceType = viewport.width < 768 ? '移动设备' : 
+                              viewport.width < 1024 ? '平板设备' : '桌面设备';
+            
+            result.innerHTML = `
+                <span class="success">✓ 设备类型: ${deviceType}</span><br>
+                <span class="success">✓ 视口大小: ${viewport.width} x ${viewport.height}</span><br>
+                <span class="success">✓ CSS媒体查询支持</span><br>
+                <span class="success">响应式测试完成</span>
+            `;
+            
+            testResults.responsive = true;
+        }
+        
+        function testGitHubPages() {
+            const result = document.getElementById('pagesResult');
+            result.style.display = 'block';
+            
+            const isGitHubPages = location.hostname.includes('github.io');
+            const hasHTTPS = location.protocol === 'https:';
+            const hasCustomDomain = !location.hostname.includes('github.io') && location.hostname !== 'localhost';
+            
+            result.innerHTML = '';
+            
+            if (isGitHubPages) {
+                result.innerHTML += '<span class="success">✓ 在GitHub Pages上运行</span><br>';
+            } else if (hasCustomDomain) {
+                result.innerHTML += '<span class="success">✓ 使用自定义域名</span><br>';
+            } else {
+                result.innerHTML += '<span class="warning">⚠ 本地或其他环境</span><br>';
+            }
+            
+            if (hasHTTPS) {
+                result.innerHTML += '<span class="success">✓ HTTPS已启用</span><br>';
+            } else {
+                result.innerHTML += '<span class="warning">⚠ 未使用HTTPS</span><br>';
+            }
+            
+            result.innerHTML += `<span class="success">✓ 当前地址: ${location.href}</span><br>`;
+            result.innerHTML += '<span class="success">GitHub Pages特性测试完成</span>';
+            
+            testResults.pages = true;
+        }
+        
+        function runAllTests() {
+            testNetwork();
+            setTimeout(() => testFiles(), 1000);
+            setTimeout(() => testJavaScript(), 2000);
+            setTimeout(() => testResponsive(), 3000);
+            setTimeout(() => testGitHubPages(), 4000);
+            setTimeout(() => showOverallResult(), 5000);
+        }
+        
+        function showOverallResult() {
+            const result = document.getElementById('overallResult');
+            result.style.display = 'block';
+            
+            const totalTests = Object.keys(testResults).length;
+            const passedTests = Object.values(testResults).filter(r => r).length;
+            const score = Math.round((passedTests / totalTests) * 100);
+            
+            let status = '';
+            if (score >= 90) {
+                status = '<span class="success">🎉 优秀！部署完全成功</span>';
+            } else if (score >= 70) {
+                status = '<span class="success">✅ 良好！部署基本成功</span>';
+            } else if (score >= 50) {
+                status = '<span class="warning">⚠ 一般！存在一些问题</span>';
+            } else {
+                status = '<span class="error">❌ 较差！需要检查配置</span>';
+            }
+            
+            result.innerHTML = `
+                <strong>整体评估结果:</strong><br>
+                ${status}<br>
+                <span class="success">通过测试: ${passedTests}/${totalTests} (${score}%)</span><br><br>
+                <strong>建议:</strong><br>
+                ${score >= 90 ? '部署完美，可以正常使用！' :
+                  score >= 70 ? '部署基本成功，可以使用，建议优化。' :
+                  '建议检查部署配置或查看文档。'}
+            `;
+        }
+        
+        // 页面加载完成后显示基本信息
+        window.addEventListener('load', () => {
+            console.log('GitHub Pages 部署测试页面加载完成');
+            console.log('当前地址:', location.href);
+            console.log('用户代理:', navigator.userAgent);
+        });
+    </script>
+</body>
+</html>

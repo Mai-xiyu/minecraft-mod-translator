@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft模组语言文件智能翻译工具</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔧</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <h1>🎮 Minecraft模组语言文件智能翻译工具</h1>
+            <p class="subtitle">纯前端无服务器架构 | 数据本地化处理 | 隐私安全保障</p>
+            <p class="author">作者：饩雨</p>
+        </header>
+
+        <!-- 主要功能区 -->
+        <main class="main-content">
+            <!-- 文件上传区 -->
+            <section class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">
+                        <h3>拖放或点击上传JAR文件</h3>
+                        <p>支持Minecraft模组文件，最大30MB</p>
+                    </div>
+                    <input type="file" id="fileInput" accept=".jar" style="display: none;">
+                </div>
+                <div class="file-info" id="fileInfo" style="display: none;">
+                    <span class="file-name" id="fileName"></span>
+                    <span class="file-size" id="fileSize"></span>
+                </div>
+            </section>
+
+            <!-- AI接口配置区 -->
+            <section class="config-section">
+                <div class="config-group">
+                    <label for="aiProvider">AI翻译接口：</label>
+                    <select id="aiProvider">
+                        <option value="deepseek">DeepSeek</option>
+                        <option value="openai-gpt35">OpenAI GPT-3.5</option>
+                        <option value="openai-gpt4">OpenAI GPT-4</option>
+                        <option value="google">Google Translate</option>
+                        <option value="custom">自定义API</option>
+                    </select>
+                </div>
+                
+                <div class="config-group" id="customApiGroup" style="display: none;">
+                    <label for="customApiUrl">自定义API URL：</label>
+                    <input type="url" id="customApiUrl" placeholder="https://api.example.com/translate">
+                </div>
+
+                <div class="config-group">
+                    <label for="apiKey">API密钥：</label>
+                    <input type="password" id="apiKey" placeholder="请输入您的API密钥">
+                    <span class="api-key-status" id="apiKeyStatus"></span>
+                </div>
+            </section>            <!-- 操作按钮 -->
+            <section class="action-section">
+                <button id="startTranslation" class="btn-primary" disabled>
+                    <span class="btn-text">开始翻译</span>
+                    <span class="loading-spinner" style="display: none;">⟳</span>
+                </button>
+                <button id="showHistory" class="btn-secondary">查看历史记录</button>
+                <button id="customTerms" class="btn-secondary">自定义术语表</button>
+                <button id="diagnostics" class="btn-secondary">诊断问题</button>
+            </section>
+
+            <!-- 进度显示区 -->
+            <section class="progress-section" id="progressSection" style="display: none;">
+                <div class="progress-header">
+                    <h3>翻译进度</h3>
+                    <span class="progress-percentage" id="progressPercentage">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-status" id="progressStatus">准备中...</div>
+            </section>
+
+            <!-- 预览和编辑区 -->
+            <section class="preview-section" id="previewSection" style="display: none;">
+                <div class="preview-header">
+                    <h3>翻译结果预览</h3>
+                    <div class="preview-actions">
+                        <button id="editToggle" class="btn-small">编辑模式</button>
+                        <button id="downloadResult" class="btn-primary">下载汉化包</button>
+                    </div>
+                </div>
+                <div class="preview-content">
+                    <div class="preview-pane">
+                        <h4>英文原文</h4>
+                        <div class="text-content" id="originalText"></div>
+                    </div>
+                    <div class="preview-pane">
+                        <h4>中文翻译</h4>
+                        <div class="text-content editable" id="translatedText"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 日志区 -->
+        <section class="log-section">
+            <div class="log-header">
+                <h4>🗂️ 操作日志</h4>
+                <button id="clearLog" class="btn-small">清空</button>
+            </div>
+            <div class="log-content" id="logContent"></div>
+        </section>
+
+        <!-- 赞助弹窗 -->
+        <div class="modal" id="sponsorModal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>💝 支持开发者</h3>
+                    <button class="modal-close" id="closeSponsorModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>您已使用本工具多次，如果觉得有用，欢迎支持开发者！</p>
+                    <div class="sponsor-qr">
+                        <img src="https://gitee.com/god_xiyu/capeimage/blob/master/qq_pic_merged_1740912737852.jpg" alt="赞助二维码" />
+                    </div>
+                    <p class="sponsor-text">扫码赞助，支持更好的工具开发 ❤️</p>
+                </div>
+                <div class="modal-footer">
+                    <button id="noThanks" class="btn-secondary">暂不赞助</button>
+                    <button id="alreadySponsored" class="btn-primary">已赞助</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 策略选择弹窗 -->
+        <div class="modal" id="strategyModal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>🔄 翻译策略选择</h3>
+                </div>
+                <div class="modal-body">
+                    <p>检测到已存在中文语言文件，请选择处理方式：</p>
+                    <div class="strategy-options">
+                        <label class="radio-option">
+                            <input type="radio" name="strategy" value="overwrite" checked>
+                            <span>覆盖原有文件</span>
+                            <small>删除旧内容，完全替换为新翻译</small>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="strategy" value="merge">
+                            <span>增量合并</span>
+                            <small>仅更新英文对应项，保留已有翻译</small>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="confirmStrategy" class="btn-primary">确认</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 自定义术语表弹窗 -->
+        <div class="modal" id="termsModal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>📚 自定义术语表</h3>
+                    <button class="modal-close" id="closeTermsModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>输入自定义术语对照表（JSON格式）：</p>
+                    <textarea id="customTermsText" placeholder='{"原文": "翻译", "Creeper": "苦力怕"}'></textarea>
+                    <div class="terms-actions">
+                        <button id="loadTermsFile" class="btn-secondary">从文件加载</button>
+                        <button id="saveTerms" class="btn-primary">保存术语表</button>
+                    </div>
+                    <input type="file" id="termsFileInput" accept=".json" style="display: none;">
+                </div>
+            </div>
+        </div>
+
+        <!-- 历史记录弹窗 -->
+        <div class="modal" id="historyModal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>📋 翻译历史</h3>
+                    <button class="modal-close" id="closeHistoryModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="historyList"></div>
+                </div>
+                <div class="modal-footer">
+                    <button id="clearHistory" class="btn-secondary">清空历史</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript依赖 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

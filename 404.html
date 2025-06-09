@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>页面未找到 - Minecraft模组翻译工具</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .error-container {
+            text-align: center;
+            max-width: 600px;
+            padding: 40px 20px;
+        }
+        
+        .error-code {
+            font-size: 120px;
+            font-weight: bold;
+            line-height: 1;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .error-title {
+            font-size: 32px;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+        
+        .error-description {
+            font-size: 18px;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        
+        .back-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 500;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .minecraft-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .error-code {
+                font-size: 80px;
+            }
+            
+            .error-title {
+                font-size: 24px;
+            }
+            
+            .error-description {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="minecraft-icon">🎮</div>
+        <div class="error-code">404</div>
+        <div class="error-title">页面未找到</div>
+        <div class="error-description">
+            抱歉，你访问的页面不存在。<br>
+            可能是链接地址有误，或者页面已被移动。
+        </div>
+        <a href="/" class="back-button">返回首页</a>
+    </div>
+    
+    <script>
+        // 3秒后自动跳转到首页
+        setTimeout(function() {
+            window.location.href = '/';
+        }, 5000);
+    </script>
+</body>
+</html>
