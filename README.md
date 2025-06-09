@@ -144,7 +144,6 @@ deploy\github-pages-setup.bat
 3. 在仓库设置中启用GitHub Pages（Source选择GitHub Actions）
 4. 访问：`https://你的用户名.github.io/minecraft-mod-translator`
 
-📖 **详细说明**：`deploy/GITHUB_PAGES.md`
 
 ---
 
@@ -162,25 +161,9 @@ minecraft-mod-translator/
 ├── TESTING.md          # 测试文档
 ├── 404.html            # GitHub Pages 404页面
 ├── .nojekyll           # 禁用Jekyll处理
-├── .github/            # GitHub相关配置
-│   └── workflows/
-│       └── deploy-pages.yml  # GitHub Pages自动部署
-└── deploy/             # 部署相关文件
-    ├── README.md               # 部署总览
-    ├── GITHUB_PAGES.md         # GitHub Pages详细指南
-    ├── GITHUB_PAGES_QUICK.md   # GitHub Pages快速指南
-    ├── github-pages-setup.bat  # GitHub Pages一键设置
-    ├── deploy.sh               # 一键部署脚本
-    ├── upload.ps1              # Windows上传脚本
-    ├── setup-ssl.sh            # HTTPS配置脚本
-    ├── nginx.conf              # Nginx配置文件
-    ├── Dockerfile              # Docker构建文件
-    ├── docker-compose.yml      # Docker编排文件
-    ├── DEPLOYMENT.md           # 详细部署说明
-    ├── CLOUD_DEPLOYMENT.md     # 云服务器部署指南
-    ├── QUICKSTART.md           # 快速启动指南
-    ├── CHECKLIST.md            # 部署检查清单
-    └── verify.sh               # 部署验证脚本
+└── .github/            # GitHub相关配置
+     └── workflows/
+        └── deploy-pages.yml  # GitHub Pages自动部署
 ```
 
 ### 核心类：MinecraftModTranslator
