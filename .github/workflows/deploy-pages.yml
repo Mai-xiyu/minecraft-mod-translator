@@ -1,0 +1,73 @@
+name: Deploy to GitHub Pages
+
+on:
+  # 当推送到main分支时触发
+  push:
+    branches: [ main, master ]
+  
+  # 允许手动触发
+  workflow_dispatch:
+
+# 设置权限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 确保同时只有一个部署在运行
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # 构建任务
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 检出代码
+        uses: actions/checkout@v4
+
+      - name: Setup Pages 配置GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Build 构建项目
+        run: |
+          echo "开始构建Minecraft模组翻译工具..."
+          
+          # 创建构建目录
+          mkdir -p _site
+          
+          # 复制核心文件
+          cp index.html _site/
+          cp styles.css _site/
+          cp script.js _site/
+          cp LICENSE _site/
+          cp README.md _site/
+          cp example_en_us.json _site/
+          
+          # 创建404页面（GitHub Pages需要）
+          cp index.html _site/404.html
+          
+          # 创建.nojekyll文件，防止Jekyll处理
+          touch _site/.nojekyll
+          
+          # 验证构建结果
+          echo "构建完成，文件列表："
+          ls -la _site/
+
+      - name: Upload artifact 上传构建产物
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  # 部署任务
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages 部署到GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
