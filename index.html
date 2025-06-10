@@ -57,7 +57,27 @@
                     <input type="password" id="apiKey" placeholder="请输入您的API密钥">
                     <span class="api-key-status" id="apiKeyStatus"></span>
                 </div>
-            </section>            <!-- 操作按钮 -->            <section class="action-section">                <button id="startTranslation" class="btn-primary" disabled>
+            </section>            <!-- 使用提示区 -->
+            <section class="usage-tips">
+                <h3>💡 使用说明</h3>
+                <div class="tips-content">
+                    <div class="tip-item">
+                        <strong>📁 有语言文件的模组：</strong>
+                        <p>上传包含 assets/*/lang/en_us.json 的模组JAR文件，点击"开始翻译"进行标准翻译流程。</p>
+                    </div>
+                    <div class="tip-item">
+                        <strong>🔧 纯硬编码模组：</strong>
+                        <p>某些模组没有语言文件，完全依赖硬编码文本。上传后会自动启动"硬编码检测"功能。</p>
+                    </div>
+                    <div class="tip-item">
+                        <strong>🎯 混合模式：</strong>
+                        <p>既有语言文件又有硬编码的模组，建议先完成标准翻译，再使用硬编码检测补充翻译。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 操作按钮 -->
+            <section class="action-section">                <button id="startTranslation" class="btn-primary" disabled>
                     <span class="btn-text">开始翻译</span>
                     <span class="loading-spinner" style="display: none;">⟳</span>
                 </button>

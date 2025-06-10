@@ -332,15 +332,16 @@ class MinecraftModTranslator {    constructor() {
                 if (debugInfo.totalFiles > 20) {
                     this.log(`  ... 还有 ${debugInfo.totalFiles - 20} 个文件`, 'info');
                 }
+                  this.log('', 'info');
+                this.log('💡 未找到语言文件的处理方案：', 'warning');
+                this.log('  1. 某些模组完全依赖硬编码文本，无语言文件', 'warning');
+                this.log('  2. 可以使用"硬编码检测"功能进行汉化', 'warning');
+                this.log('  3. 或者确认这是一个包含语言文件的模组', 'warning');
+                this.log('  4. 检查是否为未汉化的英文模组（应包含en_us.json）', 'warning');
                 
-                this.log('', 'info');
-                this.log('💡 可能的解决方案：', 'warning');
-                this.log('  1. 确保这是一个包含语言文件的Minecraft模组', 'warning');
-                this.log('  2. 检查是否为未汉化的英文模组（应包含en_us.json）', 'warning');
-                this.log('  3. 某些模组可能使用非标准目录结构', 'warning');
-                this.log('  4. 尝试其他版本或下载源的模组文件', 'warning');
-                
-                this.resetFileState();
+                // 不重置文件状态，允许硬编码检测
+                this.log('文件已加载，可以使用硬编码检测功能', 'info');
+                this.checkTranslationReady();
                 return;
             }
 
@@ -524,28 +525,40 @@ class MinecraftModTranslator {    constructor() {
         
         // 不要在这里调用 checkTranslationReady() 避免无限递归
         return isValid;
-    }
-
-    checkTranslationReady() {
-        const hasFile = this.currentFile && Object.keys(this.extractedFiles).length > 0;
+    }    checkTranslationReady() {
+        const hasFile = this.currentFile; // 只需要有文件即可
+        const hasLangFiles = Object.keys(this.extractedFiles).length > 0;
         const hasValidKey = this.validateApiKey();
         const startButton = document.getElementById('startTranslation');
         
-        if (hasFile && hasValidKey) {
+        if (hasFile && hasLangFiles && hasValidKey) {
+            // 有语言文件的标准翻译流程
             startButton.disabled = false;
             startButton.innerHTML = '<span class="btn-text">开始翻译</span>';
+        } else if (hasFile && hasValidKey) {
+            // 没有语言文件但有JAR文件，可以进行硬编码检测
+            startButton.disabled = false;
+            startButton.innerHTML = '<span class="btn-text">开始硬编码检测</span>';
         } else {
             startButton.disabled = true;
             if (!hasFile) {
-                startButton.innerHTML = '<span class="btn-text">请先上传文件</span>';
+                startButton.innerHTML = '<span class="btn-text">请先上传JAR文件</span>';
             } else if (!hasValidKey) {
                 startButton.innerHTML = '<span class="btn-text">请输入有效API密钥</span>';
             }
         }
-    }
-
-    async startTranslation() {
+    }    async startTranslation() {
         if (this.isTranslating) return;
+        
+        // 检查是否有语言文件
+        const hasLangFiles = Object.keys(this.extractedFiles).length > 0;
+        
+        if (!hasLangFiles) {
+            // 没有语言文件，直接启动硬编码检测
+            this.log('未找到语言文件，自动启动硬编码检测模式...', 'info');
+            this.showHardcodedDetection();
+            return;
+        }
         
         // 检查是否有现有中文文件需要策略选择
         const hasExistingChinese = Object.values(this.extractedFiles).some(file => file.hasExistingChinese);
@@ -1386,10 +1399,10 @@ class MinecraftModTranslator {    constructor() {
         }
         if (!apiKey) {
             this.log('   2. 请输入对应AI服务的API密钥', 'warning');
-        }
-        if (Object.keys(this.extractedFiles).length === 0 && this.currentFile) {
-            this.log('   3. 确保JAR文件包含assets/[模组ID]/lang/目录结构', 'warning');
-            this.log('   4. 确保存在en_us.json或en_us.lang文件', 'warning');
+        }        if (Object.keys(this.extractedFiles).length === 0 && this.currentFile) {
+            this.log('   3. 模组没有语言文件时，可以使用"硬编码检测"功能', 'warning');
+            this.log('   4. 或确保JAR文件包含assets/[模组ID]/lang/目录结构', 'warning');
+            this.log('   5. 确保存在en_us.json或en_us.lang文件', 'warning');
         }
     }
 
@@ -1414,9 +1427,15 @@ class MinecraftModTranslator {    constructor() {
         document.getElementById('exportHardcodedReport').style.display = 'none';
         document.getElementById('applyHardcodedChanges').style.display = 'none';
         
-        // 如果没有文件，显示提示
+        // 根据是否有文件提供不同的提示
         if (!this.currentFile) {
-            this.log('提示：您可以使用"模拟演示"功能体验硬编码检测', 'info');
+            this.log('💡 硬编码检测功能说明：', 'info');
+            this.log('  • 用于检测模组代码中直接硬编码的英文文本', 'info');
+            this.log('  • 适用于没有语言文件或语言文件不完整的模组', 'info');
+            this.log('  • 点击"模拟演示"可以体验功能效果', 'info');
+        } else {
+            this.log('📁 已检测到JAR文件，可以开始硬编码扫描', 'info');
+            this.log('💡 硬编码检测将分析模组的字节码文件', 'info');
         }
     }
 

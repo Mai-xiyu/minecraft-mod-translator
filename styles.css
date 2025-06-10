@@ -794,3 +794,43 @@ body {
 .tooltip:hover::after {
     opacity: 1;
 }
+
+/* 使用提示样式 */
+.usage-tips {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.usage-tips h3 {
+    margin-bottom: 20px;
+    color: #667eea;
+    font-size: 1.3rem;
+}
+
+.tips-content {
+    display: grid;
+    gap: 15px;
+}
+
+.tip-item {
+    padding: 15px;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 10px;
+    border-left: 4px solid #667eea;
+}
+
+.tip-item strong {
+    color: #667eea;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+}
+
+.tip-item p {
+    margin: 0;
+    line-height: 1.5;
+    color: #555;
+}
