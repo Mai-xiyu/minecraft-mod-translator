@@ -218,6 +218,18 @@ body {
     transform: translateY(-1px);
 }
 
+.btn-info {
+    background: linear-gradient(45deg, #17a2b8, #138496);
+    color: white;
+    border: 2px solid transparent;
+}
+
+.btn-info:hover {
+    background: linear-gradient(45deg, #138496, #117a8b);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+}
+
 .btn-small {
     padding: 8px 16px;
     font-size: 0.9rem;
@@ -554,69 +566,231 @@ body {
     padding: 40px;
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-    .container {
-        padding: 10px;
-    }
-    
-    .header h1 {
-        font-size: 2rem;
-    }
-    
-    .config-section {
-        grid-template-columns: 1fr;
-    }
-    
-    .preview-content {
-        grid-template-columns: 1fr;
-    }
-    
-    .action-section {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .modal-content {
-        width: 95%;
-        margin: 10px;
-    }
+/* 硬编码检测样式 */
+.modal-large {
+    max-width: 900px;
+    max-height: 90vh;
 }
 
-/* 自定义滚动条 */
-::-webkit-scrollbar {
-    width: 8px;
+.hardcoded-settings {
+    margin-bottom: 20px;
 }
 
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
+.hardcoded-settings h4 {
+    margin: 20px 0 10px 0;
+    color: #333;
+    font-size: 1.1rem;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 5px;
+}
+
+.checkbox-option {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    cursor: pointer;
+}
+
+.checkbox-option input[type="checkbox"] {
+    margin-right: 10px;
+    transform: scale(1.2);
+}
+
+.checkbox-option span {
+    font-weight: 500;
+    color: #333;
+}
+
+.filter-settings {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.filter-settings label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+.filter-settings input[type="number"] {
+    width: 80px;
+    padding: 5px;
+    border: 1px solid #ddd;
     border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb {
-    background: #667eea;
+.hardcoded-results {
+    border-top: 2px solid #e0e0e0;
+    padding-top: 20px;
+    margin-top: 20px;
+}
+
+.hardcoded-stats {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.hardcoded-stats h5 {
+    margin: 0 0 10px 0;
+    font-size: 1.1rem;
+}
+
+.hardcoded-stats .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: block;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.hardcoded-list {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+}
+
+.hardcoded-item {
+    padding: 15px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.hardcoded-item:last-child {
+    border-bottom: none;
+}
+
+.hardcoded-item:hover {
+    background: #f8f9fa;
+}
+
+.hardcoded-checkbox {
+    transform: scale(1.2);
+}
+
+.hardcoded-content {
+    flex: 1;
+}
+
+.hardcoded-original {
+    font-family: 'Consolas', monospace;
+    background: #f8f9fa;
+    padding: 8px;
     border-radius: 4px;
+    margin-bottom: 8px;
+    border-left: 3px solid #667eea;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: #764ba2;
+.hardcoded-translation {
+    color: #28a745;
+    font-weight: 500;
 }
 
-/* 动画效果 */
-.fade-in {
-    animation: fadeIn 0.5s ease;
+.hardcoded-context {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 5px;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+.hardcoded-location {
+    font-size: 0.8rem;
+    color: #888;
+    font-family: 'Consolas', monospace;
 }
 
-.slide-in {
-    animation: slideIn 0.3s ease;
+.btn-success {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-@keyframes slideIn {
-    from { transform: translateX(-100%); }
-    to { transform: translateX(0); }
+.btn-success:hover {
+    background: linear-gradient(45deg, #1e7e34, #17a2b8);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.hardcoded-progress {
+    margin: 20px 0;
+}
+
+.progress-text {
+    text-align: center;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+/* 加载动画 */
+.scanning-animation {
+    display: inline-block;
+    animation: scan-pulse 2s infinite;
+}
+
+@keyframes scan-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* 代码高亮 */
+.code-highlight {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.9rem;
+    color: #d63384;
+}
+
+.tooltip {
+    position: relative;
+    cursor: help;
+}
+
+.tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 1001;
+}
+
+.tooltip:hover::after {
+    opacity: 1;
 }

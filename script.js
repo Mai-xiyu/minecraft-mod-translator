@@ -4,14 +4,16 @@
  * 纯前端实现，无后端架构
  */
 
-class MinecraftModTranslator {
-    constructor() {
+class MinecraftModTranslator {    constructor() {
         this.currentFile = null;
         this.extractedFiles = {};
         this.translationResults = {};
         this.customTerms = {};
         this.usageCount = 0;
         this.isTranslating = false;
+        this.hardcodedStrings = [];
+        this.hardcodedResults = {};
+        this.isScanning = false;
         
         this.initializeApp();
         this.loadSettings();
@@ -35,12 +37,16 @@ class MinecraftModTranslator {
         uploadArea.addEventListener('drop', this.handleFileDrop.bind(this));
         fileInput.addEventListener('change', this.handleFileSelect.bind(this));        // AI接口配置
         document.getElementById('aiProvider').addEventListener('change', this.handleProviderChange.bind(this));
-        document.getElementById('apiKey').addEventListener('input', this.handleApiKeyInput.bind(this));
-        document.getElementById('customApiUrl').addEventListener('input', this.handleApiKeyInput.bind(this));// 操作按钮
+        document.getElementById('apiKey').addEventListener('input', this.handleApiKeyInput.bind(this));        document.getElementById('customApiUrl').addEventListener('input', this.handleApiKeyInput.bind(this));
+        
+        // 操作按钮
         document.getElementById('startTranslation').addEventListener('click', this.startTranslation.bind(this));
         document.getElementById('showHistory').addEventListener('click', this.showHistory.bind(this));
         document.getElementById('customTerms').addEventListener('click', this.showCustomTerms.bind(this));
+        document.getElementById('hardcodedDetection').addEventListener('click', this.showHardcodedDetection.bind(this));
         document.getElementById('diagnostics').addEventListener('click', this.runDiagnostics.bind(this));
+        document.getElementById('gotoDeployTest').addEventListener('click', this.gotoDeployTest.bind(this));
+        document.getElementById('gotoHardcodedDemo').addEventListener('click', this.gotoHardcodedDemo.bind(this));
 
         // 弹窗相关
         this.setupModalEventListeners();
@@ -75,13 +81,18 @@ class MinecraftModTranslator {
         document.getElementById('loadTermsFile').addEventListener('click', () => {
             document.getElementById('termsFileInput').click();
         });
-        document.getElementById('termsFileInput').addEventListener('change', this.loadTermsFromFile.bind(this));
-
-        // 历史记录弹窗
+        document.getElementById('termsFileInput').addEventListener('change', this.loadTermsFromFile.bind(this));        // 历史记录弹窗
         document.getElementById('closeHistoryModal').addEventListener('click', () => {
             document.getElementById('historyModal').style.display = 'none';
         });
-        document.getElementById('clearHistory').addEventListener('click', this.clearHistory.bind(this));
+        document.getElementById('clearHistory').addEventListener('click', this.clearHistory.bind(this));        // 硬编码检测弹窗
+        document.getElementById('closeHardcodedModal').addEventListener('click', () => {
+            document.getElementById('hardcodedModal').style.display = 'none';
+        });
+        document.getElementById('startHardcodedScan').addEventListener('click', this.startHardcodedScan.bind(this));
+        document.getElementById('testHardcodedDemo').addEventListener('click', this.testHardcodedDemo.bind(this));
+        document.getElementById('exportHardcodedReport').addEventListener('click', this.exportHardcodedReport.bind(this));
+        document.getElementById('applyHardcodedChanges').addEventListener('click', this.applyHardcodedChanges.bind(this));
     }
 
     handleDragOver(e) {
@@ -1366,8 +1377,7 @@ class MinecraftModTranslator {
         } else {
             this.log('   ✅ 浏览器支持fetch API', 'success');
         }
-        
-        this.log('=== 诊断完成 ===', 'info');
+          this.log('=== 诊断完成 ===', 'info');
         
         // 给出建议
         this.log('💡 解决建议:', 'info');
@@ -1381,6 +1391,515 @@ class MinecraftModTranslator {
             this.log('   3. 确保JAR文件包含assets/[模组ID]/lang/目录结构', 'warning');
             this.log('   4. 确保存在en_us.json或en_us.lang文件', 'warning');
         }
+    }
+
+    // ==================== 页面导航功能 ====================
+
+    gotoDeployTest() {
+        this.log('🚀 正在跳转到部署测试页面...', 'info');
+        window.open('deploy-test.html', '_blank');
+    }
+
+    gotoHardcodedDemo() {
+        this.log('🔧 正在跳转到硬编码检测演示页面...', 'info');
+        window.open('hardcoded-demo.html', '_blank');
+    }
+
+    // ==================== 硬编码检测功能 ====================
+
+    showHardcodedDetection() {
+        // 允许在没有文件的情况下打开模态框进行演示
+        document.getElementById('hardcodedModal').style.display = 'flex';
+        document.getElementById('hardcodedResults').style.display = 'none';
+        document.getElementById('exportHardcodedReport').style.display = 'none';
+        document.getElementById('applyHardcodedChanges').style.display = 'none';
+        
+        // 如果没有文件，显示提示
+        if (!this.currentFile) {
+            this.log('提示：您可以使用"模拟演示"功能体验硬编码检测', 'info');
+        }
+    }
+
+    testHardcodedDemo() {
+        this.log('🎭 启动硬编码检测模拟演示...', 'info');
+        
+        // 模拟硬编码字符串数据
+        this.hardcodedStrings = [
+            {
+                text: "Magic Wand",
+                location: "com/example/mod/items/MagicWand.class",
+                offset: 1234,
+                context: "Component.literal",
+                type: "component",
+                translation: "魔法法杖"
+            },
+            {
+                text: "A powerful magical item",
+                location: "com/example/mod/items/MagicWand.class", 
+                offset: 1456,
+                context: "Component.literal Tooltip",
+                type: "tooltip",
+                translation: "一件强大的魔法物品"
+            },
+            {
+                text: "Start Adventure",
+                location: "com/example/mod/gui/AdventureScreen.class",
+                offset: 2345,
+                context: "GUI Button",
+                type: "gui", 
+                translation: "开始冒险"
+            },
+            {
+                text: "Durability",
+                location: "com/example/mod/items/BaseItem.class",
+                offset: 3456,
+                context: "String literal",
+                type: "string",
+                translation: "耐久度"
+            },
+            {
+                text: "Right-click to activate",
+                location: "com/example/mod/items/ActiveItem.class",
+                offset: 4567,
+                context: "Component.literal Tooltip", 
+                type: "tooltip",
+                translation: "右键点击激活"
+            },
+            {
+                text: "Enchanted Sword",
+                location: "com/example/mod/items/EnchantedSword.class",
+                offset: 5678,
+                context: "Component.literal",
+                type: "component",
+                translation: "附魔剑"
+            },
+            {
+                text: "Deals extra damage to undead",
+                location: "com/example/mod/items/EnchantedSword.class",
+                offset: 5890,
+                context: "Tooltip",
+                type: "tooltip",
+                translation: "对亡灵造成额外伤害"
+            }
+        ];
+        
+        // 显示结果
+        this.displayHardcodedResults();
+        
+        this.log(`✅ 模拟演示完成，展示了 ${this.hardcodedStrings.length} 个硬编码文本示例`, 'success');
+        this.log('💡 这些是常见的硬编码模式，实际扫描会发现更多内容', 'info');
+    }
+
+    async startHardcodedScan() {
+        if (this.isScanning) {
+            this.log('警告：正在扫描中，请等待完成', 'warning');
+            return;
+        }
+
+        const enableDetection = document.getElementById('enableHardcodedDetection').checked;
+        if (!enableDetection) {
+            this.log('错误：请启用硬编码检测', 'error');
+            return;
+        }
+
+        this.isScanning = true;
+        this.hardcodedStrings = [];
+        this.hardcodedResults = {};
+
+        const scanButton = document.getElementById('startHardcodedScan');
+        scanButton.innerHTML = '<span class="scanning-animation">🔍 扫描中...</span>';
+        scanButton.disabled = true;
+
+        try {
+            this.log('🔍 开始硬编码检测...', 'info');
+            
+            // 获取扫描设置
+            const settings = this.getHardcodedSettings();
+            
+            // 扫描JAR文件中的class文件
+            await this.scanClassFiles(settings);
+            
+            // 显示结果
+            this.displayHardcodedResults();
+            
+            this.log(`✅ 硬编码检测完成，发现 ${this.hardcodedStrings.length} 个可能的硬编码文本`, 'success');
+            
+        } catch (error) {
+            this.log(`❌ 硬编码检测失败: ${error.message}`, 'error');
+            console.error('硬编码检测错误:', error);
+        } finally {
+            this.isScanning = false;
+            scanButton.innerHTML = '开始扫描';
+            scanButton.disabled = false;
+        }
+    }
+
+    getHardcodedSettings() {
+        return {
+            enableComponentLiteral: document.getElementById('enableComponentLiteral').checked,
+            enableStringLiterals: document.getElementById('enableStringLiterals').checked,
+            enableTooltipStrings: document.getElementById('enableTooltipStrings').checked,
+            strategy: document.querySelector('input[name="hardcodedStrategy"]:checked').value,
+            minTextLength: parseInt(document.getElementById('minTextLength').value) || 3,
+            excludeNumbers: document.getElementById('excludeNumbers').checked,
+            excludeSingleChar: document.getElementById('excludeSingleChar').checked
+        };
+    }
+
+    async scanClassFiles(settings) {
+        this.log('📂 正在扫描JAR文件中的class文件...', 'info');
+        
+        const zip = new JSZip();
+        await zip.loadAsync(this.currentFile);
+        
+        let totalFiles = 0;
+        let scannedFiles = 0;
+        
+        // 统计class文件数量
+        zip.forEach((relativePath, file) => {
+            if (relativePath.endsWith('.class')) {
+                totalFiles++;
+            }
+        });
+
+        if (totalFiles === 0) {
+            throw new Error('JAR文件中没有找到class文件');
+        }
+
+        this.log(`📊 发现 ${totalFiles} 个class文件，开始逐个分析...`, 'info');
+
+        // 扫描每个class文件
+        for (const [relativePath, file] of Object.entries(zip.files)) {
+            if (!relativePath.endsWith('.class')) continue;
+            
+            try {
+                const content = await file.async('uint8array');
+                const strings = this.extractStringsFromBytecode(content, relativePath, settings);
+                this.hardcodedStrings.push(...strings);
+                
+                scannedFiles++;
+                if (scannedFiles % 10 === 0) {
+                    this.log(`📈 扫描进度: ${scannedFiles}/${totalFiles} (${Math.round(scannedFiles/totalFiles*100)}%)`, 'info');
+                }
+            } catch (error) {
+                console.warn(`扫描文件 ${relativePath} 时出错:`, error);
+            }
+        }
+        
+        // 去重和过滤
+        this.hardcodedStrings = this.deduplicateAndFilter(this.hardcodedStrings, settings);
+        
+        // 翻译硬编码字符串
+        if (this.hardcodedStrings.length > 0) {
+            await this.translateHardcodedStrings(settings);
+        }
+    }
+
+    extractStringsFromBytecode(bytecode, filePath, settings) {
+        const strings = [];
+        const dataView = new DataView(bytecode.buffer);
+        
+        try {
+            // 简化的字节码字符串提取
+            // 查找UTF-8字符串常量
+            for (let i = 0; i < bytecode.length - 4; i++) {
+                try {
+                    // 寻找可能的字符串长度指示符
+                    const possibleLength = dataView.getUint16(i, false);
+                    
+                    if (possibleLength > 0 && possibleLength < 1000 && i + 2 + possibleLength < bytecode.length) {
+                        // 尝试提取字符串
+                        const stringBytes = bytecode.slice(i + 2, i + 2 + possibleLength);
+                        const candidateString = this.bytesToString(stringBytes);
+                        
+                        if (this.isValidHardcodedString(candidateString, settings)) {
+                            const context = this.analyzeStringContext(bytecode, i, filePath);
+                            strings.push({
+                                text: candidateString,
+                                location: filePath,
+                                offset: i,
+                                context: context,
+                                type: this.detectStringType(candidateString, context)
+                            });
+                        }
+                    }
+                } catch (e) {
+                    // 忽略解析错误，继续下一个位置
+                    continue;
+                }
+            }
+        } catch (error) {
+            console.warn(`解析字节码时出错 ${filePath}:`, error);
+        }
+        
+        return strings;
+    }
+
+    bytesToString(bytes) {
+        try {
+            // 尝试UTF-8解码
+            const decoder = new TextDecoder('utf-8', { fatal: true });
+            return decoder.decode(bytes);
+        } catch (e) {
+            // 如果UTF-8失败，尝试Latin-1
+            let result = '';
+            for (let i = 0; i < bytes.length; i++) {
+                const byte = bytes[i];
+                if (byte < 32 || byte > 126) {
+                    // 非打印字符，可能不是字符串
+                    throw new Error('Non-printable character found');
+                }
+                result += String.fromCharCode(byte);
+            }
+            return result;
+        }
+    }
+
+    isValidHardcodedString(str, settings) {
+        // 基本验证
+        if (!str || str.length < settings.minTextLength) return false;
+        
+        // 排除单个字符
+        if (settings.excludeSingleChar && str.length === 1) return false;
+        
+        // 排除纯数字
+        if (settings.excludeNumbers && /^\d+(\.\d+)?$/.test(str)) return false;
+        
+        // 排除明显的技术字符串
+        if (/^[a-z_]+\.[a-z_]+/.test(str)) return false; // 包名
+        if (/^[A-Z_]+$/.test(str) && str.length < 10) return false; // 常量名
+        if (/^\$[A-Z0-9_]+/.test(str)) return false; // 编译器生成的符号
+        
+        // 必须包含至少一个字母
+        if (!/[a-zA-Z]/.test(str)) return false;
+        
+        // 排除路径和URL
+        if (/^[\/\\]/.test(str) || /^https?:\/\//.test(str)) return false;
+        
+        // 检查是否为可能的用户界面文本
+        if (/[A-Z]/.test(str) || str.includes(' ') || str.length > 10) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    analyzeStringContext(bytecode, offset, filePath) {
+        // 简化的上下文分析
+        const contextSize = 50;
+        const start = Math.max(0, offset - contextSize);
+        const end = Math.min(bytecode.length, offset + contextSize);
+        const context = bytecode.slice(start, end);
+        
+        // 寻找可能的方法调用模式
+        let contextInfo = '';
+        
+        // 查找Component.literal的字节码模式
+        const contextStr = Array.from(context).map(b => String.fromCharCode(b)).join('');
+        if (contextStr.includes('Component') || contextStr.includes('literal')) {
+            contextInfo += 'Component.literal() ';
+        }
+        
+        // 查找tooltip相关
+        if (contextStr.toLowerCase().includes('tooltip')) {
+            contextInfo += 'Tooltip ';
+        }
+        
+        // 查找GUI相关
+        if (contextStr.includes('Screen') || contextStr.includes('Button')) {
+            contextInfo += 'GUI ';
+        }
+        
+        return contextInfo.trim() || '未知上下文';
+    }
+
+    detectStringType(text, context) {
+        if (context.includes('Component.literal')) return 'component';
+        if (context.includes('Tooltip')) return 'tooltip';
+        if (context.includes('GUI')) return 'gui';
+        return 'string';
+    }
+
+    deduplicateAndFilter(strings, settings) {
+        // 去重
+        const uniqueStrings = new Map();
+        
+        strings.forEach(item => {
+            const key = item.text;
+            if (!uniqueStrings.has(key)) {
+                uniqueStrings.set(key, item);
+            } else {
+                // 合并位置信息
+                const existing = uniqueStrings.get(key);
+                existing.locations = existing.locations || [existing.location];
+                if (!existing.locations.includes(item.location)) {
+                    existing.locations.push(item.location);
+                }
+            }
+        });
+        
+        return Array.from(uniqueStrings.values());
+    }
+
+    async translateHardcodedStrings(settings) {
+        this.log('🌐 正在翻译硬编码字符串...', 'info');
+        
+        const apiProvider = document.getElementById('aiProvider').value;
+        const apiKey = document.getElementById('apiKey').value;
+        
+        if (!apiKey) {
+            this.log('⚠️ 未配置API密钥，跳过翻译步骤', 'warning');
+            return;
+        }
+        
+        let translatedCount = 0;
+        const total = this.hardcodedStrings.length;
+        
+        for (let i = 0; i < this.hardcodedStrings.length; i++) {
+            const item = this.hardcodedStrings[i];
+            
+            try {
+                const translation = await this.translateSingleString(item.text, apiProvider, apiKey);
+                item.translation = translation;
+                translatedCount++;
+                
+                if (translatedCount % 5 === 0) {
+                    this.log(`🔄 翻译进度: ${translatedCount}/${total}`, 'info');
+                }
+                
+                // 避免请求过于频繁
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+            } catch (error) {
+                console.warn(`翻译失败: ${item.text}`, error);
+                item.translation = '翻译失败';
+            }
+        }
+        
+        this.log(`✅ 完成翻译，成功翻译 ${translatedCount} 个字符串`, 'success');
+    }    async translateSingleString(text, provider, apiKey) {
+        // 复用现有的翻译API逻辑
+        const prompt = `请将以下Minecraft模组中的英文文本翻译成中文，保持简洁准确：${text}`;
+        
+        // 调用现有的翻译方法，传入完整的文本数组
+        const texts = { [text]: text };
+        const results = await this.translateTexts(texts, () => {});
+        
+        // 返回翻译结果
+        return results[text] || text;
+    }
+
+    displayHardcodedResults() {
+        document.getElementById('hardcodedResults').style.display = 'block';
+        document.getElementById('exportHardcodedReport').style.display = 'inline-block';
+        
+        const strategy = document.querySelector('input[name="hardcodedStrategy"]:checked').value;
+        if (strategy === 'patch') {
+            document.getElementById('applyHardcodedChanges').style.display = 'inline-block';
+        }
+        
+        // 显示统计信息
+        this.displayHardcodedStats();
+        
+        // 显示字符串列表
+        this.displayHardcodedList();
+    }
+
+    displayHardcodedStats() {
+        const statsDiv = document.getElementById('hardcodedStats');
+        const total = this.hardcodedStrings.length;
+        const translated = this.hardcodedStrings.filter(item => item.translation).length;
+        const componentLiterals = this.hardcodedStrings.filter(item => item.type === 'component').length;
+        
+        statsDiv.innerHTML = `
+            <h5>📊 检测统计</h5>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number">${total}</span>
+                    <span class="stat-label">总计</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">${translated}</span>
+                    <span class="stat-label">已翻译</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">${componentLiterals}</span>
+                    <span class="stat-label">Component调用</span>
+                </div>
+            </div>
+        `;
+    }
+
+    displayHardcodedList() {
+        const listDiv = document.getElementById('hardcodedList');
+        
+        if (this.hardcodedStrings.length === 0) {
+            listDiv.innerHTML = '<div class="hardcoded-item">未发现硬编码字符串</div>';
+            return;
+        }
+        
+        listDiv.innerHTML = this.hardcodedStrings.map((item, index) => `
+            <div class="hardcoded-item">
+                <input type="checkbox" class="hardcoded-checkbox" data-index="${index}" checked>
+                <div class="hardcoded-content">
+                    <div class="hardcoded-original">
+                        <span class="code-highlight">${this.escapeHtml(item.text)}</span>
+                    </div>
+                    <div class="hardcoded-translation">
+                        ${item.translation || '未翻译'}
+                    </div>
+                    <div class="hardcoded-context">
+                        类型: ${item.type} | 上下文: ${item.context}
+                    </div>
+                    <div class="hardcoded-location">
+                        ${item.location}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    exportHardcodedReport() {
+        const report = {
+            scanTime: new Date().toISOString(),
+            totalStrings: this.hardcodedStrings.length,
+            settings: this.getHardcodedSettings(),
+            strings: this.hardcodedStrings
+        };
+        
+        const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `hardcoded-report-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        this.log('📄 硬编码检测报告已导出', 'success');
+    }
+
+    async applyHardcodedChanges() {
+        const selectedIndexes = Array.from(document.querySelectorAll('.hardcoded-checkbox:checked'))
+            .map(checkbox => parseInt(checkbox.dataset.index));
+        
+        if (selectedIndexes.length === 0) {
+            this.log('警告：请选择要应用的修改', 'warning');
+            return;
+        }
+        
+        this.log('🔧 应用硬编码修改功能正在开发中...', 'info');        this.log('⚠️ 字节码修改是一个复杂的过程，当前版本建议使用报告功能', 'warning');
+        
+        // TODO: 实现字节码修改功能
+        // 这需要更复杂的字节码操作库
     }
 }
 

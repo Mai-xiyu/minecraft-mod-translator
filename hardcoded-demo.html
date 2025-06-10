@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>硬编码检测功能测试</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .demo-section {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        .highlight {
+            background: #ffd700;
+            color: #000;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            margin: 10px 0;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            border-left: 4px solid #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 硬编码检测功能测试</h1>
+            <p>作者：饩雨 | Minecraft模组翻译工具 - 硬编码检测功能演示</p>
+        </div>
+
+        <div class="demo-section">
+            <h2>📋 功能概述</h2>
+            <p>硬编码检测功能能够扫描Minecraft模组JAR文件中的Java字节码，识别出直接写在代码中的英文文本，这些文本通常无法通过语言文件汉化。</p>
+            
+            <h3>🎯 检测目标</h3>
+            <ul class="feature-list">
+                <li><strong>Component.literal()调用</strong> - Minecraft组件系统中的硬编码文本</li>
+                <li><strong>字符串字面量</strong> - 代码中直接定义的英文字符串</li>
+                <li><strong>GUI文本</strong> - 按钮、标签等界面元素的硬编码文本</li>
+                <li><strong>Tooltip文本</strong> - 悬浮提示信息</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h2>💻 代码示例</h2>
+            <p>以下是一些典型的硬编码模式，我们的工具能够检测和处理：</p>
+            
+            <h3>1. Component.literal() 硬编码</h3>
+            <div class="code-block">
+// Java代码示例<br>
+public Component getDisplayName() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return <span class="highlight">Component.literal("Magic Wand")</span>;<br>
+}<br><br>
+public void addTooltip(List&lt;Component&gt; tooltip) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tooltip.add(<span class="highlight">Component.literal("A powerful magical item")</span>);<br>
+}
+            </div>
+            
+            <h3>2. 字符串字面量</h3>
+            <div class="code-block">
+// 直接的字符串硬编码<br>
+private static final String ITEM_NAME = <span class="highlight">"Enchanted Sword"</span>;<br>
+private static final String DESCRIPTION = <span class="highlight">"Deals extra damage to undead"</span>;<br><br>
+// GUI文本<br>
+public class MyScreen extends Screen {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;private Button createButton() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return new Button(<span class="highlight">"Start Adventure"</span>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}
+            </div>
+            
+            <h3>3. Tooltip和界面文本</h3>
+            <div class="code-block">
+// 悬浮提示<br>
+@Override<br>
+public void appendHoverText(ItemStack stack, TooltipContext context, List&lt;Component&gt; tooltip) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tooltip.add(Component.literal(<span class="highlight">"Durability: "</span> + getDurability()));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tooltip.add(Component.literal(<span class="highlight">"Right-click to activate"</span>));<br>
+}
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🔍 检测流程</h2>
+            <ol>
+                <li><strong>字节码扫描</strong> - 分析JAR文件中的所有.class文件</li>
+                <li><strong>字符串提取</strong> - 从字节码常量池中提取字符串</li>
+                <li><strong>智能过滤</strong> - 排除技术标识符、包名等非用户文本</li>
+                <li><strong>上下文分析</strong> - 识别字符串的使用场景（Component、Tooltip等）</li>
+                <li><strong>AI翻译</strong> - 对识别出的文本进行智能翻译</li>
+                <li><strong>结果展示</strong> - 提供详细的检测报告和翻译建议</li>
+            </ol>
+        </div>
+
+        <div class="demo-section">
+            <h2>⚙️ 功能特色</h2>
+            <ul class="feature-list">
+                <li><strong>全面扫描</strong> - 支持各种Java字节码模式的字符串检测</li>
+                <li><strong>智能过滤</strong> - 自动排除技术性文本，专注用户界面文本</li>
+                <li><strong>批量翻译</strong> - 集成AI翻译接口，自动翻译检测到的文本</li>
+                <li><strong>详细报告</strong> - 生成包含位置、上下文的详细检测报告</li>
+                <li><strong>可选修改</strong> - 实验性字节码修改功能（开发中）</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h2>🚀 使用说明</h2>
+            <ol>
+                <li>在主界面上传Minecraft模组JAR文件</li>
+                <li>点击"硬编码检测"按钮打开检测窗口</li>
+                <li>配置检测选项（检测范围、过滤条件等）</li>
+                <li>点击"开始扫描"进行硬编码文本检测</li>
+                <li>查看检测结果，选择需要翻译的文本</li>
+                <li>导出检测报告或应用修改</li>
+            </ol>
+              <div style="text-align: center; margin-top: 20px;">
+                <button class="btn" onclick="window.open('index.html', '_blank')">返回主界面测试</button>
+                <button class="btn" onclick="window.open('https://github.com/onlyxiyu/minecraft-mod-translator', '_blank')">查看源码</button>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>⚠️ 注意事项</h2>
+            <ul class="feature-list">
+                <li><strong>实验性功能</strong> - 硬编码检测是一个复杂的过程，可能有误检或漏检</li>
+                <li><strong>备份原文件</strong> - 在应用任何修改前，请备份原始模组文件</li>
+                <li><strong>兼容性</strong> - 字节码修改可能影响模组的兼容性和稳定性</li>
+                <li><strong>测试验证</strong> - 修改后的模组需要在游戏中充分测试</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.3);">
+            <p><strong>Minecraft模组翻译工具 - 硬编码检测功能</strong></p>
+            <p>作者：饩雨 | 让模组汉化更加完整和专业</p>
+        </div>
+    </div>
+</body>
+</html>

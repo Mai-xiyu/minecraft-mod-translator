@@ -35,11 +35,11 @@ deploy\github-pages-setup.bat
 - 保存设置
 
 ### 4. 访问网站
-- 地址：`https://你的用户名.github.io/minecraft-mod-translator`
+- 地址：`https://onlyxiyu.github.io/minecraft-mod-translator`
 
 ## 🌐 自定义域名
 - 在GitHub Pages设置中添加自定义域名
-- 配置DNS CNAME记录指向 `你的用户名.github.io`
+- 配置DNS CNAME记录指向 `onlyxiyu.github.io`
 
 ## 📱 移动端适配
 网站已完全支持移动设备访问，响应式设计确保在手机和平板上都有良好体验。

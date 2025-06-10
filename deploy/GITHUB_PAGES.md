@@ -47,7 +47,7 @@ GitHub Pages是GitHub提供的免费静态网站托管服务，完美适合我�
 
 ```bash
 # 克隆仓库到本地
-git clone https://github.com/你的用户名/minecraft-mod-translator.git
+git clone https://github.com/onlyxiyu/minecraft-mod-translator.git
 cd minecraft-mod-translator
 
 # 复制项目文件到仓库目录
@@ -80,7 +80,7 @@ git push origin main
 
 2. **获取网站地址**：
    - 部署成功后，在 `Settings` → `Pages` 中可以看到网站地址
-   - 通常格式为：`https://你的用户名.github.io/minecraft-mod-translator`
+   - 通常格式为：`https://onlyxiyu.github.io/minecraft-mod-translator`
 
 ## 🎯 验证部署
 
@@ -111,10 +111,9 @@ git push origin main
 
 2. **配置DNS解析**：
    在域名注册商管理面板添加以下记录：
-   ```
-   类型: CNAME
+   ```   类型: CNAME
    主机记录: www（或@）
-   记录值: 你的用户名.github.io
+   记录值: onlyxiyu.github.io
    TTL: 600
    ```
 
@@ -231,8 +230,8 @@ git push --force origin main
 
 ### 网站信息
 
-- **网址**：`https://你的用户名.github.io/minecraft-mod-translator`
-- **源码**：`https://github.com/你的用户名/minecraft-mod-translator`
+- **网址**：`https://onlyxiyu.github.io/minecraft-mod-translator`
+- **源码**：`https://github.com/onlyxiyu/minecraft-mod-translator`
 - **更新方式**：推送代码到GitHub仓库
 - **费用**：完全免费
 

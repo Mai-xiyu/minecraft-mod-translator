@@ -57,15 +57,16 @@
                     <input type="password" id="apiKey" placeholder="请输入您的API密钥">
                     <span class="api-key-status" id="apiKeyStatus"></span>
                 </div>
-            </section>            <!-- 操作按钮 -->
-            <section class="action-section">
-                <button id="startTranslation" class="btn-primary" disabled>
+            </section>            <!-- 操作按钮 -->            <section class="action-section">                <button id="startTranslation" class="btn-primary" disabled>
                     <span class="btn-text">开始翻译</span>
                     <span class="loading-spinner" style="display: none;">⟳</span>
                 </button>
                 <button id="showHistory" class="btn-secondary">查看历史记录</button>
                 <button id="customTerms" class="btn-secondary">自定义术语表</button>
+                <button id="hardcodedDetection" class="btn-secondary">硬编码检测</button>
                 <button id="diagnostics" class="btn-secondary">诊断问题</button>
+                <button id="gotoDeployTest" class="btn-info">部署测试</button>
+                <button id="gotoHardcodedDemo" class="btn-info">硬编码演示</button>
             </section>
 
             <!-- 进度显示区 -->
@@ -174,6 +175,69 @@
                         <button id="saveTerms" class="btn-primary">保存术语表</button>
                     </div>
                     <input type="file" id="termsFileInput" accept=".json" style="display: none;">
+                </div>
+            </div>
+        </div>
+
+        <!-- 硬编码检测设置弹窗 -->
+        <div class="modal" id="hardcodedModal" style="display: none;">
+            <div class="modal-content modal-large">
+                <div class="modal-header">
+                    <h3>🔧 硬编码文本检测与汉化</h3>
+                    <button class="modal-close" id="closeHardcodedModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="hardcoded-settings">
+                        <h4>检测设置</h4>
+                        <label class="checkbox-option">
+                            <input type="checkbox" id="enableHardcodedDetection" checked>
+                            <span>启用硬编码文本检测</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" id="enableComponentLiteral" checked>
+                            <span>检测 Component.literal() 硬编码</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" id="enableStringLiterals" checked>
+                            <span>检测字符串字面量</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" id="enableTooltipStrings">
+                            <span>检测悬浮提示文本</span>
+                        </label>
+                        
+                        <h4>处理方式</h4>
+                        <div class="strategy-options">
+                            <label class="radio-option">
+                                <input type="radio" name="hardcodedStrategy" value="report" checked>
+                                <span>仅生成报告</span>
+                                <small>列出硬编码文本和建议翻译，不修改文件</small>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="hardcodedStrategy" value="patch">
+                                <span>尝试字节码修改</span>
+                                <small>尝试直接修改字节码中的字符串（实验性功能）</small>
+                            </label>
+                        </div>
+                        
+                        <h4>过滤条件</h4>
+                        <div class="filter-settings">
+                            <label>最小文本长度: <input type="number" id="minTextLength" value="3" min="1" max="50"></label>
+                            <label>排除纯数字: <input type="checkbox" id="excludeNumbers" checked></label>
+                            <label>排除单个字符: <input type="checkbox" id="excludeSingleChar" checked></label>
+                        </div>
+                    </div>
+                    
+                    <div class="hardcoded-results" id="hardcodedResults" style="display: none;">
+                        <h4>检测结果</h4>
+                        <div class="hardcoded-stats" id="hardcodedStats"></div>
+                        <div class="hardcoded-list" id="hardcodedList"></div>
+                    </div>
+                </div>                <div class="modal-footer">
+                    <button id="startHardcodedScan" class="btn-primary">开始扫描</button>
+                    <button id="testHardcodedDemo" class="btn-secondary">模拟演示</button>
+                    <button id="exportHardcodedReport" class="btn-secondary" style="display: none;">导出报告</button>
+                    <button id="applyHardcodedChanges" class="btn-success" style="display: none;">应用修改</button>
                 </div>
             </div>
         </div>
