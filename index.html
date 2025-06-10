@@ -239,12 +239,25 @@
                                 <small>尝试直接修改字节码中的字符串（实验性功能）</small>
                             </label>
                         </div>
-                        
-                        <h4>过滤条件</h4>
+                          <h4>过滤条件</h4>
                         <div class="filter-settings">
                             <label>最小文本长度: <input type="number" id="minTextLength" value="3" min="1" max="50"></label>
                             <label>排除纯数字: <input type="checkbox" id="excludeNumbers" checked></label>
                             <label>排除单个字符: <input type="checkbox" id="excludeSingleChar" checked></label>
+                        </div>
+                        
+                        <h4>高级选项</h4>
+                        <div class="advanced-settings">
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="useAdvancedScanning" checked>
+                                <span>使用高级字节码解析</span>
+                                <small>提高检测准确性，但可能稍慢</small>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="enableBatchTranslation" checked>
+                                <span>智能批量翻译</span>
+                                <small>按文本类型分组翻译，提高一致性</small>
+                            </label>
                         </div>
                     </div>
                     
@@ -257,6 +270,7 @@
                     <button id="startHardcodedScan" class="btn-primary">开始扫描</button>
                     <button id="testHardcodedDemo" class="btn-secondary">模拟演示</button>
                     <button id="exportHardcodedReport" class="btn-secondary" style="display: none;">导出报告</button>
+                    <button id="downloadHardcodedResult" class="btn-primary" style="display: none;">下载汉化包</button>
                     <button id="applyHardcodedChanges" class="btn-success" style="display: none;">应用修改</button>
                 </div>
             </div>
