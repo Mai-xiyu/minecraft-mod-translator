@@ -1,7 +1,6 @@
 # Minecraft模组语言文件智能翻译工具
 
 **作者：饩雨**
-## 免责声明: 如果您上传的模组不被作者允许私自更改内容，这次更改需要你自己承担，本人不负任何责任
 
 [![GitHub](https://img.shields.io/badge/GitHub-onlyxiyu/minecraft--mod--translator-blue?logo=github)](https://github.com/onlyxiyu/minecraft-mod-translator)
 [![Pages](https://img.shields.io/badge/GitHub%20Pages-在线访问-brightgreen?logo=github)](https://onlyxiyu.github.io/minecraft-mod-translator)
