@@ -4,16 +4,14 @@
  * 纯前端实现，无后端架构
  */
 
-class MinecraftModTranslator {    constructor() {
+class MinecraftModTranslator {
+    constructor() {
         this.currentFile = null;
         this.extractedFiles = {};
         this.translationResults = {};
         this.customTerms = {};
         this.usageCount = 0;
         this.isTranslating = false;
-        this.hardcodedStrings = [];
-        this.hardcodedResults = {};
-        this.isScanning = false;
         
         this.initializeApp();
         this.loadSettings();
@@ -37,16 +35,12 @@ class MinecraftModTranslator {    constructor() {
         uploadArea.addEventListener('drop', this.handleFileDrop.bind(this));
         fileInput.addEventListener('change', this.handleFileSelect.bind(this));        // AI接口配置
         document.getElementById('aiProvider').addEventListener('change', this.handleProviderChange.bind(this));
-        document.getElementById('apiKey').addEventListener('input', this.handleApiKeyInput.bind(this));        document.getElementById('customApiUrl').addEventListener('input', this.handleApiKeyInput.bind(this));
-        
-        // 操作按钮
-        document.getElementById('startTranslation').addEventListener('click', this.startTranslation.bind(this));
-        document.getElementById('showHistory').addEventListener('click', this.showHistory.bind(this));
+        document.getElementById('apiKey').addEventListener('input', this.handleApiKeyInput.bind(this));
+        document.getElementById('customApiUrl').addEventListener('input', this.handleApiKeyInput.bind(this));// 操作按钮
+        document.getElementById('startTranslation').addEventListener('click', this.startTranslation.bind(this));        document.getElementById('showHistory').addEventListener('click', this.showHistory.bind(this));
         document.getElementById('customTerms').addEventListener('click', this.showCustomTerms.bind(this));
-        document.getElementById('hardcodedDetection').addEventListener('click', this.showHardcodedDetection.bind(this));
+        document.getElementById('gotoHardcodedTool').addEventListener('click', this.gotoHardcodedTool.bind(this));
         document.getElementById('diagnostics').addEventListener('click', this.runDiagnostics.bind(this));
-        document.getElementById('gotoDeployTest').addEventListener('click', this.gotoDeployTest.bind(this));
-        document.getElementById('gotoHardcodedDemo').addEventListener('click', this.gotoHardcodedDemo.bind(this));
 
         // 弹窗相关
         this.setupModalEventListeners();
@@ -81,18 +75,13 @@ class MinecraftModTranslator {    constructor() {
         document.getElementById('loadTermsFile').addEventListener('click', () => {
             document.getElementById('termsFileInput').click();
         });
-        document.getElementById('termsFileInput').addEventListener('change', this.loadTermsFromFile.bind(this));        // 历史记录弹窗
+        document.getElementById('termsFileInput').addEventListener('change', this.loadTermsFromFile.bind(this));
+
+        // 历史记录弹窗
         document.getElementById('closeHistoryModal').addEventListener('click', () => {
             document.getElementById('historyModal').style.display = 'none';
         });
-        document.getElementById('clearHistory').addEventListener('click', this.clearHistory.bind(this));        // 硬编码检测弹窗
-        document.getElementById('closeHardcodedModal').addEventListener('click', () => {
-            document.getElementById('hardcodedModal').style.display = 'none';
-        });        document.getElementById('startHardcodedScan').addEventListener('click', this.startHardcodedScan.bind(this));
-        document.getElementById('testHardcodedDemo').addEventListener('click', this.testHardcodedDemo.bind(this));
-        document.getElementById('exportHardcodedReport').addEventListener('click', this.exportHardcodedReport.bind(this));
-        document.getElementById('downloadHardcodedResult').addEventListener('click', this.downloadHardcodedResult.bind(this));
-        document.getElementById('applyHardcodedChanges').addEventListener('click', this.applyHardcodedChanges.bind(this));
+        document.getElementById('clearHistory').addEventListener('click', this.clearHistory.bind(this));
     }
 
     handleDragOver(e) {
@@ -332,16 +321,15 @@ class MinecraftModTranslator {    constructor() {
                 if (debugInfo.totalFiles > 20) {
                     this.log(`  ... 还有 ${debugInfo.totalFiles - 20} 个文件`, 'info');
                 }
-                  this.log('', 'info');
-                this.log('💡 未找到语言文件的处理方案：', 'warning');
-                this.log('  1. 某些模组完全依赖硬编码文本，无语言文件', 'warning');
-                this.log('  2. 可以使用"硬编码检测"功能进行汉化', 'warning');
-                this.log('  3. 或者确认这是一个包含语言文件的模组', 'warning');
-                this.log('  4. 检查是否为未汉化的英文模组（应包含en_us.json）', 'warning');
                 
-                // 不重置文件状态，允许硬编码检测
-                this.log('文件已加载，可以使用硬编码检测功能', 'info');
-                this.checkTranslationReady();
+                this.log('', 'info');
+                this.log('💡 可能的解决方案：', 'warning');
+                this.log('  1. 确保这是一个包含语言文件的Minecraft模组', 'warning');
+                this.log('  2. 检查是否为未汉化的英文模组（应包含en_us.json）', 'warning');
+                this.log('  3. 某些模组可能使用非标准目录结构', 'warning');
+                this.log('  4. 尝试其他版本或下载源的模组文件', 'warning');
+                
+                this.resetFileState();
                 return;
             }
 
@@ -351,9 +339,12 @@ class MinecraftModTranslator {    constructor() {
                 await this.processLanguageFiles(modId, files);
                 processedCount++;
             }
+              this.log(`文件解压完成，成功处理 ${processedCount} 个模组`, 'success');
             
-            this.log(`文件解压完成，成功处理 ${processedCount} 个模组`, 'success');
-            this.checkTranslationReady();
+            // 确保状态检查在异步操作完成后执行
+            setTimeout(() => {
+                this.checkTranslationReady();
+            }, 100);
             
         } catch (error) {
             this.log(`文件解压失败: ${error.message}`, 'error');
@@ -383,15 +374,16 @@ class MinecraftModTranslator {    constructor() {
         const hasValidExtension = validExtensions.some(ext => lowerName.endsWith(ext));
         
         if (!hasValidExtension) return false;
-        
-        // 支持的语言代码模式 - 更宽松的匹配
+          // 支持的语言代码模式 - 更宽松的匹配
         const langPatterns = [
             /^[a-z]{2}_[a-z]{2}\.(json|lang)$/,  // 标准格式: en_us.json, zh_cn.lang
+            /^[a-z]{2}_[A-Z]{2}\.(json|lang)$/,  // 大写格式: en_US.json, zh_CN.lang
+            /^[A-Z]{2}_[a-z]{2}\.(json|lang)$/,  // 混合格式: EN_us.json
+            /^[A-Z]{2}_[A-Z]{2}\.(json|lang)$/,  // 全大写格式: EN_US.json
             /^[a-z]{2}\.(json|lang)$/,           // 简短格式: en.json, zh.lang
             /^lang_[a-z]{2}_[a-z]{2}\.(json|lang)$/, // 带前缀: lang_en_us.json
             /^language_[a-z]{2}_[a-z]{2}\.(json|lang)$/, // 带前缀: language_en_us.json
             /^[a-z]{2}-[a-z]{2}\.(json|lang)$/,  // 连字符格式: en-us.json
-            /^[a-z]{2}_[A-Z]{2}\.(json|lang)$/,  // 大写格式: en_US.json
             /^[a-zA-Z]+\.(json|lang)$/           // 任何字母文件名 (更宽松)
         ];
         
@@ -401,13 +393,12 @@ class MinecraftModTranslator {    constructor() {
         if (!isValid && (lowerName.includes('en') || lowerName.includes('lang') || lowerName.includes('us'))) {
             console.log(`[调试] 文件 "${fileName}" 可能是语言文件但不匹配模式`);
         }
-        
-        return isValid;
+          return isValid;
     }
 
     async processLanguageFiles(modId, files) {
-        // 查找英文文件
-        const englishFiles = ['en_us.json', 'en_us.lang'];
+        // 查找英文文件 - 支持大小写变体
+        const englishFiles = ['en_us.json', 'en_us.lang', 'en_US.json', 'en_US.lang'];
         let englishFile = null;
         let englishFileName = null;
         let englishFileInfo = null;
@@ -424,13 +415,19 @@ class MinecraftModTranslator {    constructor() {
         if (!englishFile) {
             this.log(`警告：模组 ${modId} 未找到英文语言文件`, 'warning');
             return;
-        }
-
-        // 读取英文文件内容
+        }        // 读取英文文件内容
         const englishContent = await englishFile.async('text');
         
-        // 检查中文文件
-        const chineseFileName = englishFileName.replace('en_us', 'zh_cn');
+        // 检查中文文件 - 智能处理大小写
+        let chineseFileName;
+        if (englishFileName.includes('en_us')) {
+            chineseFileName = englishFileName.replace('en_us', 'zh_cn');
+        } else if (englishFileName.includes('en_US')) {
+            chineseFileName = englishFileName.replace('en_US', 'zh_CN');
+        } else {
+            // 默认使用小写格式
+            chineseFileName = 'zh_cn.' + englishFileName.split('.').pop();
+        }
         const chineseFileInfo = files[chineseFileName];
         const chineseFile = chineseFileInfo ? chineseFileInfo.zipEntry : null;
         
@@ -439,15 +436,17 @@ class MinecraftModTranslator {    constructor() {
             englishContent: englishContent,
             chineseFile: chineseFileName,
             chineseContent: chineseFile ? await chineseFile.async('text') : null,
-            hasExistingChinese: !!chineseFile,
-            originalPath: englishFileInfo.directoryPath, // 保存原始目录路径
+            hasExistingChinese: !!chineseFile,            originalPath: englishFileInfo.directoryPath, // 保存原始目录路径
             modId: modId
         };
-
+        
         this.log(`检测到模组 ${modId}: ${englishFileName}`, 'info');
         if (chineseFile) {
             this.log(`发现已有中文文件: ${chineseFileName}`, 'info');
         }
+        
+        // 确保状态更新
+        this.checkTranslationReady();
     }
 
     handleProviderChange() {
@@ -455,11 +454,11 @@ class MinecraftModTranslator {    constructor() {
         const customApiGroup = document.getElementById('customApiGroup');
         
         if (provider === 'custom') {
-            customApiGroup.style.display = 'block';
-        } else {
+            customApiGroup.style.display = 'block';        } else {
             customApiGroup.style.display = 'none';
         }
-          this.checkTranslationReady();
+        
+        this.checkTranslationReady();
     }
 
     handleApiKeyInput() {
@@ -526,39 +525,33 @@ class MinecraftModTranslator {    constructor() {
         // 不要在这里调用 checkTranslationReady() 避免无限递归
         return isValid;
     }    checkTranslationReady() {
-        const hasFile = this.currentFile; // 只需要有文件即可
-        const hasLangFiles = Object.keys(this.extractedFiles).length > 0;
+        const hasFile = this.currentFile && Object.keys(this.extractedFiles).length > 0;
         const hasValidKey = this.validateApiKey();
         const startButton = document.getElementById('startTranslation');
         
-        if (hasFile && hasLangFiles && hasValidKey) {
-            // 有语言文件的标准翻译流程
+        // 调试信息
+        console.log('[DEBUG] checkTranslationReady:', {
+            currentFile: !!this.currentFile,
+            extractedFilesCount: Object.keys(this.extractedFiles).length,
+            hasValidKey: hasValidKey,
+            hasFile: hasFile
+        });
+        
+        if (hasFile && hasValidKey) {
             startButton.disabled = false;
             startButton.innerHTML = '<span class="btn-text">开始翻译</span>';
-        } else if (hasFile && hasValidKey) {
-            // 没有语言文件但有JAR文件，可以进行硬编码检测
-            startButton.disabled = false;
-            startButton.innerHTML = '<span class="btn-text">开始硬编码检测</span>';
         } else {
             startButton.disabled = true;
             if (!hasFile) {
-                startButton.innerHTML = '<span class="btn-text">请先上传JAR文件</span>';
+                startButton.innerHTML = '<span class="btn-text">请先上传文件</span>';
             } else if (!hasValidKey) {
                 startButton.innerHTML = '<span class="btn-text">请输入有效API密钥</span>';
             }
         }
-    }    async startTranslation() {
+    }
+
+    async startTranslation() {
         if (this.isTranslating) return;
-        
-        // 检查是否有语言文件
-        const hasLangFiles = Object.keys(this.extractedFiles).length > 0;
-        
-        if (!hasLangFiles) {
-            // 没有语言文件，直接启动硬编码检测
-            this.log('未找到语言文件，自动启动硬编码检测模式...', 'info');
-            this.showHardcodedDetection();
-            return;
-        }
         
         // 检查是否有现有中文文件需要策略选择
         const hasExistingChinese = Object.values(this.extractedFiles).some(file => file.hasExistingChinese);
@@ -1112,7 +1105,8 @@ class MinecraftModTranslator {    constructor() {
             'TNT': 'TNT',
             'Obsidian': '黑曜石',
             'Bedrock': '基岩',
-            'Sand': '沙子',            'Gravel': '沙砾',
+            'Sand': '沙子',
+            'Gravel': '沙砾',
             'Clay': '粘土',
             'Snow': '雪',
             'Ice': '冰',
@@ -1389,7 +1383,8 @@ class MinecraftModTranslator {    constructor() {
         } else {
             this.log('   ✅ 浏览器支持fetch API', 'success');
         }
-          this.log('=== 诊断完成 ===', 'info');
+        
+        this.log('=== 诊断完成 ===', 'info');
         
         // 给出建议
         this.log('💡 解决建议:', 'info');
@@ -1398,701 +1393,15 @@ class MinecraftModTranslator {    constructor() {
         }
         if (!apiKey) {
             this.log('   2. 请输入对应AI服务的API密钥', 'warning');
-        }        if (Object.keys(this.extractedFiles).length === 0 && this.currentFile) {
-            this.log('   3. 模组没有语言文件时，可以使用"硬编码检测"功能', 'warning');
-            this.log('   4. 或确保JAR文件包含assets/[模组ID]/lang/目录结构', 'warning');
-            this.log('   5. 确保存在en_us.json或en_us.lang文件', 'warning');
         }
+        if (Object.keys(this.extractedFiles).length === 0 && this.currentFile) {
+            this.log('   3. 确保JAR文件包含assets/[模组ID]/lang/目录结构', 'warning');
+            this.log('   4. 确保存在en_us.json或en_us.lang文件', 'warning');        }
     }
 
-    // ==================== 页面导航功能 ====================
-
-    gotoDeployTest() {
-        this.log('🚀 正在跳转到部署测试页面...', 'info');
-        window.open('deploy-test.html', '_blank');
-    }
-
-    gotoHardcodedDemo() {
-        this.log('🔧 正在跳转到硬编码检测演示页面...', 'info');
-        window.open('hardcoded-demo.html', '_blank');    }
-
-    // ==================== 硬编码检测功能 ====================
-
-    showHardcodedDetection() {
-        // 允许在没有文件的情况下打开模态框进行演示
-        document.getElementById('hardcodedModal').style.display = 'flex';
-        document.getElementById('hardcodedResults').style.display = 'none';
-        document.getElementById('exportHardcodedReport').style.display = 'none';
-        document.getElementById('downloadHardcodedResult').style.display = 'none';
-        document.getElementById('applyHardcodedChanges').style.display = 'none';
-        
-        // 根据是否有文件提供不同的提示
-        if (!this.currentFile) {
-            this.log('💡 硬编码检测功能说明：', 'info');
-            this.log('  • 用于检测模组代码中直接硬编码的英文文本', 'info');
-            this.log('  • 适用于没有语言文件或语言文件不完整的模组', 'info');
-            this.log('  • 点击"模拟演示"可以体验功能效果', 'info');
-        } else {
-            this.log('📁 已检测到JAR文件，可以开始硬编码扫描', 'info');
-            this.log('💡 硬编码检测将分析模组的字节码文件', 'info');
-        }
-    }
-
-    testHardcodedDemo() {
-        this.log('🎭 启动硬编码检测模拟演示...', 'info');
-        
-        // 模拟硬编码字符串数据
-        this.hardcodedStrings = [
-            {
-                text: "Magic Wand",
-                location: "com/example/mod/items/MagicWand.class",
-                offset: 1234,
-                context: "Component.literal",
-                type: "component",
-                translation: "魔法法杖"
-            },
-            {
-                text: "A powerful magical item",
-                location: "com/example/mod/items/MagicWand.class", 
-                offset: 1456,
-                context: "Component.literal Tooltip",
-                type: "tooltip",
-                translation: "一件强大的魔法物品"
-            },
-            {
-                text: "Start Adventure",
-                location: "com/example/mod/gui/AdventureScreen.class",
-                offset: 2345,
-                context: "GUI Button",
-                type: "gui", 
-                translation: "开始冒险"
-            },
-            {
-                text: "Durability",
-                location: "com/example/mod/items/BaseItem.class",
-                offset: 3456,
-                context: "String literal",
-                type: "string",
-                translation: "耐久度"
-            },
-            {
-                text: "Right-click to activate",
-                location: "com/example/mod/items/ActiveItem.class",
-                offset: 4567,
-                context: "Component.literal Tooltip", 
-                type: "tooltip",
-                translation: "右键点击激活"
-            },
-            {
-                text: "Enchanted Sword",
-                location: "com/example/mod/items/EnchantedSword.class",
-                offset: 5678,
-                context: "Component.literal",
-                type: "component",
-                translation: "附魔剑"
-            },
-            {
-                text: "Deals extra damage to undead",
-                location: "com/example/mod/items/EnchantedSword.class",
-                offset: 5890,
-                context: "Tooltip",
-                type: "tooltip",
-                translation: "对亡灵造成额外伤害"
-            }
-        ];
-        
-        // 显示结果
-        this.displayHardcodedResults();
-        
-        this.log(`✅ 模拟演示完成，展示了 ${this.hardcodedStrings.length} 个硬编码文本示例`, 'success');
-        this.log('💡 这些是常见的硬编码模式，实际扫描会发现更多内容', 'info');
-    }
-
-    async startHardcodedScan() {
-        if (this.isScanning) {
-            this.log('警告：正在扫描中，请等待完成', 'warning');
-            return;
-        }
-
-        const enableDetection = document.getElementById('enableHardcodedDetection').checked;
-        if (!enableDetection) {
-            this.log('错误：请启用硬编码检测', 'error');
-            return;
-        }
-
-        this.isScanning = true;
-        this.hardcodedStrings = [];
-        this.hardcodedResults = {};
-
-        const scanButton = document.getElementById('startHardcodedScan');
-        scanButton.innerHTML = '<span class="scanning-animation">🔍 扫描中...</span>';
-        scanButton.disabled = true;        try {
-            this.log('🔍 开始硬编码检测...', 'info');
-            
-            // 获取扫描设置
-            const settings = this.getHardcodedSettings();
-            
-            // 扫描JAR文件中的class文件
-            await this.scanClassFiles(settings);
-            
-            this.log(`✅ 硬编码检测完成，发现 ${this.hardcodedStrings.length} 个可能的硬编码文本`, 'success');
-            
-            // 显示结果（确保在翻译完成后）
-            this.displayHardcodedResults();
-            
-        } catch (error) {
-            this.log(`❌ 硬编码检测失败: ${error.message}`, 'error');
-            console.error('硬编码检测错误:', error);
-        } finally {
-            this.isScanning = false;
-            scanButton.innerHTML = '开始扫描';
-            scanButton.disabled = false;
-        }
-    }    getHardcodedSettings() {
-        return {
-            enableComponentLiteral: document.getElementById('enableComponentLiteral').checked,
-            enableStringLiterals: document.getElementById('enableStringLiterals').checked,
-            enableTooltipStrings: document.getElementById('enableTooltipStrings').checked,
-            strategy: document.querySelector('input[name="hardcodedStrategy"]:checked').value,
-            minTextLength: parseInt(document.getElementById('minTextLength').value) || 3,
-            excludeNumbers: document.getElementById('excludeNumbers').checked,
-            excludeSingleChar: document.getElementById('excludeSingleChar').checked,
-            useAdvancedScanning: document.getElementById('useAdvancedScanning')?.checked || false,
-            enableBatchTranslation: document.getElementById('enableBatchTranslation')?.checked || false
-        };
-    }
-
-    // 智能
-    prioritizeClassFiles(classFiles) {
-        return classFiles.sort((a, b) => {
-            const pathA = a.path.toLowerCase();
-            const pathB = b.path.toLowerCase();
-            
-            // 高优先级关键词
-            const highPriorityKeywords = [
-                'gui', 'screen', 'menu', 'button', 'tooltip', 'widget',
-                'component', 'text', 'label', 'title', 'message',
-                'dialog', 'window', 'panel', 'tab', 'item'
-            ];
-            
-            // 中等优先级关键词
-            const mediumPriorityKeywords = [
-                'config', 'option', 'setting', 'property',
-                'block', 'entity', 'tile', 'recipe'
-            ];
-            
-            // 低优先级（排除）关键词
-            const lowPriorityKeywords = [
-                'util', 'helper', 'common', 'base', 'abstract',
-                'network', 'packet', 'data', 'storage', 'cache',
-                'math', 'vector', 'matrix', 'algorithm'
-            ];
-            
-            const scoreA = this.calculateFileScore(pathA, highPriorityKeywords, mediumPriorityKeywords, lowPriorityKeywords);
-            const scoreB = this.calculateFileScore(pathB, highPriorityKeywords, mediumPriorityKeywords, lowPriorityKeywords);
-            
-            return scoreB - scoreA; // 降序排列，高分在前
-        });
-    }
-    
-    calculateFileScore(path, highKeywords, mediumKeywords, lowKeywords) {
-        let score = 0;
-        
-        // 高优先级关键词 +10分
-        highKeywords.forEach(keyword => {
-            if (path.includes(keyword)) score += 10;
-        });
-        
-        // 中等优先级关键词 +5分
-        mediumKeywords.forEach(keyword => {
-            if (path.includes(keyword)) score += 5;
-        });
-        
-        // 低优先级（排除）关键词 -5分
-        lowKeywords.forEach(keyword => {
-            if (path.includes(keyword)) score -= 5;
-        });
-        
-        // 文件路径深度奖励（UI类通常在相对浅的目录）
-        const depth = (path.match(/\//g) || []).length;
-        if (depth <= 3) score += 3;
-        else if (depth >= 6) score -= 2;
-        
-        return score;
-    }
-
-    async scanClassFiles(settings) {
-        this.log('📂 正在扫描JAR文件中的class文件...', 'info');
-        
-        const startTime = Date.now();
-        const zip = new JSZip();
-        await zip.loadAsync(this.currentFile);
-        
-        // 收集并优先排序class文件
-        const classFiles = [];
-        zip.forEach((relativePath, file) => {
-            if (relativePath.endsWith('.class')) {
-                classFiles.push({ path: relativePath, file: file });
-            }
-        });
-
-        if (classFiles.length === 0) {
-            throw new Error('JAR文件中没有找到class文件');
-        }
-
-        // 智能过滤：优先处理可能包含UI文本的类
-        const prioritizedFiles = this.prioritizeClassFiles(classFiles);
-        const totalFiles = prioritizedFiles.length;
-        
-        this.log(`📊 发现 ${totalFiles} 个class文件，开始优化扫描...`, 'info');
-
-        // 使用并行处理批量扫描（分批处理避免内存溢出）
-        const batchSize = 20; // 每批处理20个文件
-        let scannedFiles = 0;
-        const allStrings = [];
-
-        for (let i = 0; i < prioritizedFiles.length; i += batchSize) {
-            const batch = prioritizedFiles.slice(i, i + batchSize);
-            
-            // 并行处理当前批次
-            const batchPromises = batch.map(async ({ path, file }) => {
-                try {
-                    const content = await file.async('uint8array');
-                    return this.extractStringsFromBytecode(content, path, settings);
-                } catch (error) {
-                    console.warn(`扫描文件 ${path} 时出错:`, error);
-                    return [];
-                }
-            });
-            
-            const batchResults = await Promise.all(batchPromises);
-            batchResults.forEach(strings => allStrings.push(...strings));
-            
-            scannedFiles += batch.length;
-            const progress = Math.round(scannedFiles / totalFiles * 100);
-            this.log(`📈 扫描进度: ${scannedFiles}/${totalFiles} (${progress}%) - 批次 ${Math.ceil((i + 1) / batchSize)}`, 'info');
-            
-            // 如果已经找到足够的字符串，可以提前结束（性能优化）
-            if (allStrings.length > 1000 && progress > 50) {
-                this.log(`💡 已检测到大量硬编码文本 (${allStrings.length}个)，提前结束扫描以提升性能`, 'info');
-                break;
-            }
-        }
-        
-        this.hardcodedStrings = allStrings;
-        
-        // 去重和过滤
-        this.hardcodedStrings = this.deduplicateAndFilter(this.hardcodedStrings, settings);        const scanTime = (Date.now() - startTime) / 1000;
-        this.log(`⚡ 扫描完成，用时 ${scanTime.toFixed(2)}秒，发现 ${this.hardcodedStrings.length} 个候选文本`, 'success');
-          // 翻译硬编码字符串
-        if (this.hardcodedStrings.length > 0) {
-            await this.translateHardcodedStrings(settings);
-            // 翻译完成后更新显示
-            this.displayHardcodedResults();
-        }
-    }
-
-    extractStringsFromBytecode(bytecode, filePath, settings) {
-        const strings = [];
-        const dataView = new DataView(bytecode.buffer);
-        
-        try {
-            // 简化的字节码字符串提取
-            // 查找UTF-8字符串常量
-            for (let i = 0; i < bytecode.length - 4; i++) {
-                try {
-                    // 寻找可能的字符串长度指示符
-                    const possibleLength = dataView.getUint16(i, false);
-                    
-                    if (possibleLength > 0 && possibleLength < 1000 && i + 2 + possibleLength < bytecode.length) {
-                        // 尝试提取字符串
-                        const stringBytes = bytecode.slice(i + 2, i + 2 + possibleLength);
-                        const candidateString = this.bytesToString(stringBytes);
-                        
-                        if (this.isValidHardcodedString(candidateString, settings)) {
-                            const context = this.analyzeStringContext(bytecode, i, filePath);
-                            strings.push({
-                                text: candidateString,
-                                location: filePath,
-                                offset: i,
-                                context: context,
-                                type: this.detectStringType(candidateString, context)
-                            });
-                        }
-                    }
-                } catch (e) {
-                    // 忽略解析错误，继续下一个位置
-                    continue;
-                }
-            }
-        } catch (error) {
-            console.warn(`解析字节码时出错 ${filePath}:`, error);
-        }
-        
-        return strings;
-    }
-
-    bytesToString(bytes) {
-        try {
-            // 尝试UTF-8解码
-            const decoder = new TextDecoder('utf-8', { fatal: true });
-            return decoder.decode(bytes);
-        } catch (e) {
-            // 如果UTF-8失败，尝试Latin-1
-            let result = '';
-            for (let i = 0; i < bytes.length; i++) {
-                const byte = bytes[i];
-                if (byte < 32 || byte > 126) {
-                    // 非打印字符，可能不是字符串
-                    throw new Error('Non-printable character found');
-                }
-                result += String.fromCharCode(byte);
-            }
-            return result;
-        }
-    }
-
-    isValidHardcodedString(str, settings) {
-        // 基本验证
-        if (!str || str.length < settings.minTextLength) return false;
-        
-        // 排除单个字符
-        if (settings.excludeSingleChar && str.length === 1) return false;
-        
-        // 排除纯数字
-        if (settings.excludeNumbers && /^\d+(\.\d+)?$/.test(str)) return false;
-        
-        // 排除明显的技术字符串
-        if (/^[a-z_]+\.[a-z_]+/.test(str)) return false; // 包名
-        if (/^[A-Z_]+$/.test(str) && str.length < 10) return false; // 常量名
-        if (/^\$[A-Z0-9_]+/.test(str)) return false; // 编译器生成的符号
-        
-        // 必须包含至少一个字母
-        if (!/[a-zA-Z]/.test(str)) return false;
-        
-        // 排除路径和URL
-        if (/^[\/\\]/.test(str) || /^https?:\/\//.test(str)) return false;
-        
-        // 检查是否为可能的用户界面文本
-        if (/[A-Z]/.test(str) || str.includes(' ') || str.length > 10) {
-            return true;
-        }
-        
-        return false;
-    }
-
-    analyzeStringContext(bytecode, offset, filePath) {
-        // 简化的上下文分析
-        const contextSize = 50;
-        const start = Math.max(0, offset - contextSize);
-        const end = Math.min(bytecode.length, offset + contextSize);
-        const context = bytecode.slice(start, end);
-        
-        // 寻找可能的方法调用模式
-        let contextInfo = '';
-        
-        // 查找Component.literal的字节码模式
-        const contextStr = Array.from(context).map(b => String.fromCharCode(b)).join('');
-        if (contextStr.includes('Component') || contextStr.includes('literal')) {
-            contextInfo += 'Component.literal() ';
-        }
-        
-        // 查找tooltip相关
-        if (contextStr.toLowerCase().includes('tooltip')) {
-            contextInfo += 'Tooltip ';
-        }
-        
-        // 查找GUI相关
-        if (contextStr.includes('Screen') || contextStr.includes('Button')) {
-            contextInfo += 'GUI ';
-        }
-        
-        return contextInfo.trim() || '未知上下文';
-    }
-
-    detectStringType(text, context) {
-        if (context.includes('Component.literal')) return 'component';
-        if (context.includes('Tooltip')) return 'tooltip';
-        if (context.includes('GUI')) return 'gui';
-        return 'string';
-    }
-
-    deduplicateAndFilter(strings, settings) {
-        // 去重
-        const uniqueStrings = new Map();
-        
-        strings.forEach(item => {
-            const key = item.text;
-            if (!uniqueStrings.has(key)) {
-                uniqueStrings.set(key, item);
-            } else {
-                // 合并位置信息
-                const existing = uniqueStrings.get(key);
-                existing.locations = existing.locations || [existing.location];
-                if (!existing.locations.includes(item.location)) {
-                    existing.locations.push(item.location);
-                }
-            }
-        });
-        
-        return Array.from(uniqueStrings.values());
-    }
-
-    async translateHardcodedStrings(settings) {
-        this.log('🌐 正在翻译硬编码字符串...', 'info');
-        
-        const apiProvider = document.getElementById('aiProvider').value;
-        const apiKey = document.getElementById('apiKey').value;
-        
-        if (!apiKey) {
-            this.log('⚠️ 未配置API密钥，跳过翻译步骤', 'warning');
-            return;
-        }
-        
-        let translatedCount = 0;
-        const total = this.hardcodedStrings.length;
-        
-        for (let i = 0; i < this.hardcodedStrings.length; i++) {
-            const item = this.hardcodedStrings[i];
-            
-            try {
-                const translation = await this.translateSingleString(item.text, apiProvider, apiKey);
-                item.translation = translation;
-                translatedCount++;
-                
-                if (translatedCount % 5 === 0) {
-                    this.log(`🔄 翻译进度: ${translatedCount}/${total}`, 'info');
-                }
-                
-                // 避免请求过于频繁
-                await new Promise(resolve => setTimeout(resolve, 100));
-                
-            } catch (error) {
-                console.warn(`翻译失败: ${item.text}`, error);
-                item.translation = '翻译失败';
-            }
-        }
-        
-        this.log(`✅ 完成翻译，成功翻译 ${translatedCount} 个字符串`, 'success');
-    }    async translateSingleString(text, provider, apiKey) {
-        // 复用现有的翻译API逻辑
-        const prompt = `请将以下Minecraft模组中的英文文本翻译成中文，保持简洁准确：${text}`;
-        
-        // 调用现有的翻译方法，传入完整的文本数组
-        const texts = { [text]: text };
-        const results = await this.translateTexts(texts, () => {});
-        
-        // 返回翻译结果
-        return results[text] || text;
-    }    displayHardcodedResults() {
-        document.getElementById('hardcodedResults').style.display = 'block';
-        document.getElementById('exportHardcodedReport').style.display = 'inline-block';
-        document.getElementById('downloadHardcodedResult').style.display = 'inline-block';
-        
-        const strategy = document.querySelector('input[name="hardcodedStrategy"]:checked').value;
-        if (strategy === 'patch') {
-            document.getElementById('applyHardcodedChanges').style.display = 'inline-block';
-        }
-        
-        // 显示统计信息
-        this.displayHardcodedStats();
-        
-        // 显示字符串列表
-        this.displayHardcodedList();
-    }
-
-    displayHardcodedStats() {
-        const statsDiv = document.getElementById('hardcodedStats');
-        const total = this.hardcodedStrings.length;
-        const translated = this.hardcodedStrings.filter(item => item.translation).length;
-        const componentLiterals = this.hardcodedStrings.filter(item => item.type === 'component').length;
-        
-        statsDiv.innerHTML = `
-            <h5>📊 检测统计</h5>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <span class="stat-number">${total}</span>
-                    <span class="stat-label">总计</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">${translated}</span>
-                    <span class="stat-label">已翻译</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">${componentLiterals}</span>
-                    <span class="stat-label">Component调用</span>
-                </div>
-            </div>
-        `;
-    }
-
-    displayHardcodedList() {
-        const listDiv = document.getElementById('hardcodedList');
-        
-        if (this.hardcodedStrings.length === 0) {
-            listDiv.innerHTML = '<div class="hardcoded-item">未发现硬编码字符串</div>';
-            return;
-        }
-        
-        listDiv.innerHTML = this.hardcodedStrings.map((item, index) => `
-            <div class="hardcoded-item">
-                <input type="checkbox" class="hardcoded-checkbox" data-index="${index}" checked>
-                <div class="hardcoded-content">
-                    <div class="hardcoded-original">
-                        <span class="code-highlight">${this.escapeHtml(item.text)}</span>
-                    </div>
-                    <div class="hardcoded-translation">
-                        ${item.translation || '未翻译'}
-                    </div>
-                    <div class="hardcoded-context">
-                        类型: ${item.type} | 上下文: ${item.context}
-                    </div>
-                    <div class="hardcoded-location">
-                        ${item.location}
-                    </div>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    exportHardcodedReport() {
-        const report = {
-            scanTime: new Date().toISOString(),
-            totalStrings: this.hardcodedStrings.length,
-            settings: this.getHardcodedSettings(),
-            strings: this.hardcodedStrings
-        };
-        
-        const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `hardcoded-report-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        this.log('📄 硬编码检测报告已导出', 'success');
-    }
-
-    async downloadHardcodedResult() {
-        if (!this.currentFile || !this.hardcodedStrings || this.hardcodedStrings.length === 0) {
-            this.log('没有可下载的硬编码翻译结果', 'error');
-            return;
-        }
-
-        try {
-            this.log('正在生成硬编码汉化包...', 'info');
-            
-            // 重新加载原始JAR文件
-            const zip = await JSZip.loadAsync(this.currentFile);
-            
-            // 创建中文语言文件内容
-            const translations = {};
-            let translatedCount = 0;
-            
-            this.hardcodedStrings.forEach((item, index) => {
-                if (item.translation && item.translation !== '翻译失败' && item.translation !== '未翻译') {
-                    // 使用文件路径和文本作为key，确保唯一性
-                    const key = `hardcoded.${item.type}.${index}`;
-                    translations[key] = item.translation;
-                    translatedCount++;
-                }
-            });
-
-            if (translatedCount === 0) {
-                this.log('没有可用的翻译内容', 'warning');
-                return;
-            }
-
-            // 尝试检测原有的语言文件路径结构
-            let langPath = 'assets/hardcoded_translations/lang/zh_cn.json';
-            
-            // 检查是否已有语言文件，使用相同的路径结构
-            for (const [path] of Object.entries(zip.files)) {
-                if (path.includes('/lang/') && path.endsWith('.json')) {
-                    const pathParts = path.split('/');
-                    const langIndex = pathParts.indexOf('lang');
-                    if (langIndex > 0) {
-                        pathParts[langIndex + 1] = 'zh_cn.json';
-                        langPath = pathParts.join('/');
-                        break;
-                    }
-                }
-            }
-
-            // 创建语言文件内容
-            const langFileContent = JSON.stringify(translations, null, 2);
-            
-            // 添加语言文件到JAR
-            zip.file(langPath, langFileContent);
-            
-            // 创建说明文件
-            const readmeContent = `# 硬编码翻译说明
-
-这个JAR文件包含了硬编码文本的翻译结果。
-
-## 翻译统计
-- 检测到的硬编码文本: ${this.hardcodedStrings.length} 个
-- 成功翻译的文本: ${translatedCount} 个
-- 翻译完成度: ${Math.round(translatedCount / this.hardcodedStrings.length * 100)}%
-
-## 翻译内容预览
-${this.hardcodedStrings.slice(0, 5).map(item => 
-    `- "${item.text}" → "${item.translation || '未翻译'}"`
-).join('\n')}
-
-## 语言文件位置
-${langPath}
-
-## 注意事项
-1. 这是通过硬编码检测生成的翻译文件
-2. 某些翻译可能需要在游戏中验证准确性
-3. 如果模组不支持语言文件，这些翻译可能不会生效
-4. 建议配合字节码修改功能一起使用
-
-生成时间: ${new Date().toLocaleString()}
-工具版本: Minecraft模组翻译工具 - 硬编码检测版
-`;
-            
-            zip.file('hardcoded_translations_readme.txt', readmeContent);
-            
-            // 生成新的JAR文件
-            const blob = await zip.generateAsync({ type: 'blob' });
-            
-            // 创建下载链接
-            const originalName = this.currentFile.name.replace('.jar', '');
-            const downloadName = `${originalName}-硬编码汉化包.jar`;
-            
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = downloadName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            this.log(`✅ 硬编码汉化包下载完成: ${downloadName}`, 'success');
-            this.log(`📊 包含 ${translatedCount} 个翻译条目`, 'success');
-            this.log(`📂 语言文件路径: ${langPath}`, 'info');
-            this.log(`📖 包含详细说明文件: hardcoded_translations_readme.txt`, 'info');
-            
-            // 保存到历史记录
-            this.saveToHistory(originalName, downloadName);
-            
-        } catch (error) {
-            this.log(`下载失败: ${error.message}`, 'error');
-            console.error('硬编码汉化包下载错误:', error);
-        }
+    gotoHardcodedTool() {
+        this.log('🔧 正在跳转到硬编码汉化工具...', 'info');
+        window.open('hardcoded-translator.html', '_blank');
     }
 }
 

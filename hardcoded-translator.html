@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft模组硬编码汉化工具</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* 硬编码工具特有样式 */
+        .tool-header {
+            background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hardcoded-main {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .step-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .step-section.active {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .step-section.completed {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.05);
+        }
+        
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        
+        .step-number.completed {
+            background: #28a745;
+        }
+        
+        .scan-results {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .result-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .hardcoded-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        
+        .hardcoded-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s ease;
+        }
+        
+        .hardcoded-item:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .hardcoded-item:last-child {
+            border-bottom: none;
+        }
+        
+        .hardcoded-checkbox {
+            margin-right: 15px;
+        }
+        
+        .hardcoded-content {
+            flex: 1;
+        }
+        
+        .hardcoded-original {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .hardcoded-translation {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .hardcoded-context {
+            font-size: 0.8rem;
+            color: #888;
+            background: #f8f9fa;
+            padding: 5px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+          .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            border-radius: 25px;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .back-link:hover {
+            color: white;
+            background: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .scan-progress {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .progress-text {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <h1 class="tool-header">🔧 Minecraft模组硬编码汉化工具</h1>
+            <p class="subtitle">检测和翻译模组代码中的硬编码英文文本</p>
+            <p class="author">作者：饩雨</p>
+        </header>
+
+        <a href="index.html" class="back-link">← 返回主工具</a>
+
+        <!-- 主要功能区 -->
+        <main class="hardcoded-main">
+            <!-- 步骤1：文件上传 -->
+            <section class="step-section" id="step1">
+                <div class="step-header">
+                    <div class="step-number" id="step1Number">1</div>
+                    <h3>上传JAR文件</h3>
+                </div>
+                <div class="upload-area" id="hardcodedUploadArea">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">
+                        <h3>拖放或点击上传JAR文件</h3>
+                        <p>支持Minecraft模组文件，最大30MB</p>
+                    </div>
+                    <input type="file" id="hardcodedFileInput" accept=".jar" style="display: none;">
+                </div>
+                <div class="file-info" id="hardcodedFileInfo" style="display: none;">
+                    <span class="file-name" id="hardcodedFileName"></span>
+                    <span class="file-size" id="hardcodedFileSize"></span>
+                </div>
+            </section>
+
+            <!-- 步骤2：配置检测设置 -->
+            <section class="step-section" id="step2">
+                <div class="step-header">
+                    <div class="step-number" id="step2Number">2</div>
+                    <h3>配置检测设置</h3>
+                </div>
+                <div class="config-section">
+                    <div class="config-group">
+                        <label>检测类型：</label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" id="detectComponentLiteral" checked>
+                            <span>Component.literal() 硬编码</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" id="detectStringLiterals" checked>
+                            <span>字符串字面量</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" id="detectTooltips">
+                            <span>悬浮提示文本</span>
+                        </label>
+                    </div>
+                    <div class="config-group">
+                        <label>过滤设置：</label>
+                        <div style="display: flex; gap: 15px; align-items: center; margin-top: 10px;">
+                            <label>最小长度: <input type="number" id="minLength" value="3" min="1" max="50" style="width: 60px;"></label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="excludeNumbers" checked>
+                                <span>排除纯数字</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="excludeSingleChar" checked>
+                                <span>排除单字符</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 步骤3：AI接口配置 -->
+            <section class="step-section" id="step3">
+                <div class="step-header">
+                    <div class="step-number" id="step3Number">3</div>
+                    <h3>配置AI翻译</h3>
+                </div>
+                <div class="config-section">
+                    <div class="config-group">
+                        <label for="hardcodedAiProvider">AI翻译接口：</label>
+                        <select id="hardcodedAiProvider">
+                            <option value="deepseek">DeepSeek</option>
+                            <option value="openai-gpt35">OpenAI GPT-3.5</option>
+                            <option value="openai-gpt4">OpenAI GPT-4</option>
+                            <option value="google">Google Translate</option>
+                            <option value="custom">自定义API</option>
+                        </select>
+                    </div>
+                    <div class="config-group">
+                        <label for="hardcodedApiKey">API密钥：</label>
+                        <input type="password" id="hardcodedApiKey" placeholder="请输入您的API密钥">
+                        <span class="api-key-status" id="hardcodedApiKeyStatus"></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 步骤4：开始扫描 -->
+            <section class="step-section" id="step4">
+                <div class="step-header">
+                    <div class="step-number" id="step4Number">4</div>
+                    <h3>开始扫描</h3>
+                </div>
+                <div class="action-section">
+                    <button id="startHardcodedScan" class="btn-primary" disabled>
+                        <span class="btn-text">开始扫描硬编码文本</span>
+                        <span class="loading-spinner" style="display: none;">⟳</span>
+                    </button>
+                    <button id="runDemo" class="btn-secondary">运行演示</button>
+                </div>
+                
+                <!-- 扫描进度 -->
+                <div class="scan-progress" id="scanProgress">
+                    <div class="progress-text" id="scanProgressText">正在扫描...</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="scanProgressFill"></div>
+                    </div>
+                </div>
+
+                <!-- 扫描结果 -->
+                <div class="scan-results" id="scanResults">
+                    <h4>检测结果</h4>
+                    <div class="result-stats" id="resultStats"></div>
+                    <div class="hardcoded-list" id="hardcodedList"></div>
+                    <div class="action-section" style="margin-top: 20px;">
+                        <button id="selectAll" class="btn-secondary">全选</button>
+                        <button id="selectNone" class="btn-secondary">取消全选</button>
+                        <button id="exportReport" class="btn-secondary">导出报告</button>
+                        <button id="downloadModified" class="btn-primary" style="display: none;">下载修改后的JAR</button>
+                    </div>
+                </div>
+            </section>
+        </main>        <!-- 日志区 -->
+        <section class="log-section">
+            <div class="log-header">
+                <h4>🗂️ 操作日志</h4>
+                <button id="clearHardcodedLog" class="btn-small">清空</button>
+            </div>
+            <div class="log-content" id="hardcodedLogContent"></div>
+        </section>
+
+        <!-- 底部返回区 -->
+        <section class="footer-section" style="text-align: center; margin-top: 30px; padding: 20px;">
+            <a href="index.html" class="btn-secondary" style="display: inline-block; padding: 12px 24px; text-decoration: none;">
+                ← 返回主工具页面
+            </a>
+        </section>
+    </div>
+
+    <!-- JavaScript依赖 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="hardcoded-translator.js"></script>
+</body>
+</html>

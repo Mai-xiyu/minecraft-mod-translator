@@ -9,11 +9,17 @@
 </head>
 <body>
     <div class="container">
-        <!-- 头部 -->
-        <header class="header">
+        <!-- 头部 -->        <header class="header">
             <h1>🎮 Minecraft模组语言文件智能翻译工具</h1>
             <p class="subtitle">纯前端无服务器架构 | 数据本地化处理 | 隐私安全保障</p>
             <p class="author">作者：饩雨</p>
+            
+            <!-- 免责声明 -->
+            <div class="disclaimer">
+                <p><strong>⚠️ 免责声明：</strong></p>
+                <p>本工具仅供学习交流使用。用户需自行确保拥有所处理模组的合法使用权限。</p>
+                <p>模组版权归原作者所有，请遵守相关许可协议。使用本工具产生的任何法律责任由用户自行承担。</p>
+            </div>
         </header>
 
         <!-- 主要功能区 -->
@@ -57,36 +63,15 @@
                     <input type="password" id="apiKey" placeholder="请输入您的API密钥">
                     <span class="api-key-status" id="apiKeyStatus"></span>
                 </div>
-            </section>            <!-- 使用提示区 -->
-            <section class="usage-tips">
-                <h3>💡 使用说明</h3>
-                <div class="tips-content">
-                    <div class="tip-item">
-                        <strong>📁 有语言文件的模组：</strong>
-                        <p>上传包含 assets/*/lang/en_us.json 的模组JAR文件，点击"开始翻译"进行标准翻译流程。</p>
-                    </div>
-                    <div class="tip-item">
-                        <strong>🔧 纯硬编码模组：</strong>
-                        <p>某些模组没有语言文件，完全依赖硬编码文本。上传后会自动启动"硬编码检测"功能。</p>
-                    </div>
-                    <div class="tip-item">
-                        <strong>🎯 混合模式：</strong>
-                        <p>既有语言文件又有硬编码的模组，建议先完成标准翻译，再使用硬编码检测补充翻译。</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 操作按钮 -->
-            <section class="action-section">                <button id="startTranslation" class="btn-primary" disabled>
+            </section>            <!-- 操作按钮 -->
+            <section class="action-section">
+                <button id="startTranslation" class="btn-primary" disabled>
                     <span class="btn-text">开始翻译</span>
                     <span class="loading-spinner" style="display: none;">⟳</span>
-                </button>
-                <button id="showHistory" class="btn-secondary">查看历史记录</button>
+                </button>                <button id="showHistory" class="btn-secondary">查看历史记录</button>
                 <button id="customTerms" class="btn-secondary">自定义术语表</button>
-                <button id="hardcodedDetection" class="btn-secondary">硬编码检测</button>
+                <button id="gotoHardcodedTool" class="btn-secondary">硬编码汉化工具</button>
                 <button id="diagnostics" class="btn-secondary">诊断问题</button>
-                <button id="gotoDeployTest" class="btn-info">部署测试</button>
-                <button id="gotoHardcodedDemo" class="btn-info">硬编码演示</button>
             </section>
 
             <!-- 进度显示区 -->
@@ -195,83 +180,6 @@
                         <button id="saveTerms" class="btn-primary">保存术语表</button>
                     </div>
                     <input type="file" id="termsFileInput" accept=".json" style="display: none;">
-                </div>
-            </div>
-        </div>
-
-        <!-- 硬编码检测设置弹窗 -->
-        <div class="modal" id="hardcodedModal" style="display: none;">
-            <div class="modal-content modal-large">
-                <div class="modal-header">
-                    <h3>🔧 硬编码文本检测与汉化</h3>
-                    <button class="modal-close" id="closeHardcodedModal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="hardcoded-settings">
-                        <h4>检测设置</h4>
-                        <label class="checkbox-option">
-                            <input type="checkbox" id="enableHardcodedDetection" checked>
-                            <span>启用硬编码文本检测</span>
-                        </label>
-                        <label class="checkbox-option">
-                            <input type="checkbox" id="enableComponentLiteral" checked>
-                            <span>检测 Component.literal() 硬编码</span>
-                        </label>
-                        <label class="checkbox-option">
-                            <input type="checkbox" id="enableStringLiterals" checked>
-                            <span>检测字符串字面量</span>
-                        </label>
-                        <label class="checkbox-option">
-                            <input type="checkbox" id="enableTooltipStrings">
-                            <span>检测悬浮提示文本</span>
-                        </label>
-                        
-                        <h4>处理方式</h4>
-                        <div class="strategy-options">
-                            <label class="radio-option">
-                                <input type="radio" name="hardcodedStrategy" value="report" checked>
-                                <span>仅生成报告</span>
-                                <small>列出硬编码文本和建议翻译，不修改文件</small>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="hardcodedStrategy" value="patch">
-                                <span>尝试字节码修改</span>
-                                <small>尝试直接修改字节码中的字符串（实验性功能）</small>
-                            </label>
-                        </div>
-                          <h4>过滤条件</h4>
-                        <div class="filter-settings">
-                            <label>最小文本长度: <input type="number" id="minTextLength" value="3" min="1" max="50"></label>
-                            <label>排除纯数字: <input type="checkbox" id="excludeNumbers" checked></label>
-                            <label>排除单个字符: <input type="checkbox" id="excludeSingleChar" checked></label>
-                        </div>
-                        
-                        <h4>高级选项</h4>
-                        <div class="advanced-settings">
-                            <label class="checkbox-option">
-                                <input type="checkbox" id="useAdvancedScanning" checked>
-                                <span>使用高级字节码解析</span>
-                                <small>提高检测准确性，但可能稍慢</small>
-                            </label>
-                            <label class="checkbox-option">
-                                <input type="checkbox" id="enableBatchTranslation" checked>
-                                <span>智能批量翻译</span>
-                                <small>按文本类型分组翻译，提高一致性</small>
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div class="hardcoded-results" id="hardcodedResults" style="display: none;">
-                        <h4>检测结果</h4>
-                        <div class="hardcoded-stats" id="hardcodedStats"></div>
-                        <div class="hardcoded-list" id="hardcodedList"></div>
-                    </div>
-                </div>                <div class="modal-footer">
-                    <button id="startHardcodedScan" class="btn-primary">开始扫描</button>
-                    <button id="testHardcodedDemo" class="btn-secondary">模拟演示</button>
-                    <button id="exportHardcodedReport" class="btn-secondary" style="display: none;">导出报告</button>
-                    <button id="downloadHardcodedResult" class="btn-primary" style="display: none;">下载汉化包</button>
-                    <button id="applyHardcodedChanges" class="btn-success" style="display: none;">应用修改</button>
                 </div>
             </div>
         </div>
