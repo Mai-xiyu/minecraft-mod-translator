@@ -1,6 +1,7 @@
 # Minecraft模组语言文件智能翻译工具
 
 **作者：饩雨**
+**协助开发: Claude sonnet 4**
 
 [![GitHub](https://img.shields.io/badge/GitHub-onlyxiyu/minecraft--mod--translator-blue?logo=github)](https://github.com/onlyxiyu/minecraft-mod-translator)
 [![Pages](https://img.shields.io/badge/GitHub%20Pages-在线访问-brightgreen?logo=github)](https://onlyxiyu.github.io/minecraft-mod-translator)
