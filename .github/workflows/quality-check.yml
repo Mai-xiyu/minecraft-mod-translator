@@ -1,0 +1,162 @@
+name: Code Quality Check
+
+on:
+  # 当有PR请求时触发
+  pull_request:
+    branches: [ main, master ]
+  
+  # 当推送到main分支时触发（部署前检查）
+  push:
+    branches: [ main, master ]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 检出代码
+        uses: actions/checkout@v4
+
+      - name: Validate HTML 验证HTML
+        run: |
+          echo "检查HTML文件语法..."
+          
+          # 检查HTML文件是否存在基本结构
+          for file in *.html; do
+            if [ -f "$file" ]; then
+              echo "检查 $file"
+              
+              # 检查基本HTML结构
+              if ! grep -q "<!DOCTYPE html>" "$file"; then
+                echo "❌ $file 缺少DOCTYPE声明"
+                exit 1
+              fi
+              
+              if ! grep -q "<html" "$file"; then
+                echo "❌ $file 缺少html标签"
+                exit 1
+              fi
+              
+              if ! grep -q "<head>" "$file"; then
+                echo "❌ $file 缺少head标签"
+                exit 1
+              fi
+              
+              if ! grep -q "<body>" "$file"; then
+                echo "❌ $file 缺少body标签"
+                exit 1
+              fi
+              
+              echo "✅ $file 基本结构正确"
+            fi
+          done
+
+      - name: Check JavaScript 检查JavaScript
+        run: |
+          echo "检查JavaScript文件..."
+          
+          # 检查JS文件语法（基础检查）
+          for file in *.js; do
+            if [ -f "$file" ]; then
+              echo "检查 $file"
+              
+              # 检查文件是否为空
+              if [ ! -s "$file" ]; then
+                echo "❌ $file 文件为空"
+                exit 1
+              fi
+              
+              # 检查是否有明显的语法错误（基础检查）
+              if grep -q "function.*{.*}" "$file"; then
+                echo "✅ $file 包含有效的JavaScript函数"
+              elif grep -q "class.*{" "$file"; then
+                echo "✅ $file 包含有效的JavaScript类"
+              elif grep -q "const\|let\|var" "$file"; then
+                echo "✅ $file 包含变量声明"
+              else
+                echo "⚠️  $file 可能不包含有效的JavaScript代码"
+              fi
+            fi
+          done
+
+      - name: Check File Structure 检查文件结构
+        run: |
+          echo "检查项目文件结构..."
+          
+          # 检查必需文件
+          required_files=(
+            "index.html"
+            "styles.css"
+            "script_new.js"
+            "bytecode-parser-fixed.js"
+            "hardcoded-translator-enhanced.html"
+            "hardcoded-translator-enhanced.js"
+            "README.md"
+            "LICENSE"
+          )
+          
+          for file in "${required_files[@]}"; do
+            if [ -f "$file" ]; then
+              echo "✅ $file 存在"
+            else
+              echo "❌ 缺少必需文件: $file"
+              exit 1
+            fi
+          done
+          
+          echo "✅ 所有必需文件都存在"
+
+      - name: Check Documentation 检查文档
+        run: |
+          echo "检查文档完整性..."
+          
+          # 检查README.md
+          if [ -f "README.md" ]; then
+            if grep -q "# " "README.md"; then
+              echo "✅ README.md 包含标题"
+            else
+              echo "❌ README.md 缺少主标题"
+              exit 1
+            fi
+            
+            if grep -q "使用方法\|如何使用\|Usage" "README.md"; then
+              echo "✅ README.md 包含使用说明"
+            else
+              echo "❌ README.md 缺少使用说明"
+              exit 1
+            fi
+          else
+            echo "❌ 缺少README.md文件"
+            exit 1
+          fi
+          
+          echo "✅ 文档检查通过"
+
+      - name: Security Check 安全检查
+        run: |
+          echo "进行基础安全检查..."
+          
+          # 检查是否有潜在的安全问题
+          if grep -r "eval(" . --include="*.js" --include="*.html"; then
+            echo "⚠️  发现eval()使用，请检查是否安全"
+          fi
+          
+          if grep -r "innerHTML.*+" . --include="*.js"; then
+            echo "⚠️  发现innerHTML拼接，请确保没有XSS风险"
+          fi
+          
+          if grep -r "document.write" . --include="*.js" --include="*.html"; then
+            echo "⚠️  发现document.write使用，建议使用现代方法"
+          fi
+          
+          # 检查是否有硬编码的API密钥或敏感信息
+          if grep -r "sk-[a-zA-Z0-9]" . --include="*.js" --include="*.html"; then
+            echo "❌ 发现可能的硬编码API密钥，这是安全风险！"
+            exit 1
+          fi
+          
+          if grep -r "password.*=" . --include="*.js" --include="*.html"; then
+            echo "❌ 发现可能的硬编码密码，这是安全风险！"
+            exit 1
+          fi
+          
+          echo "✅ 基础安全检查通过"

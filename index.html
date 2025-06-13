@@ -108,6 +108,54 @@
             </section>
         </main>
 
+        <!-- 工具选择区 -->
+        <section class="tools-section">
+            <div class="section-header">
+                <h2>🛠️ 选择翻译工具</h2>
+                <p>根据您的需求选择合适的翻译工具</p>
+            </div>
+            
+            <div class="tools-grid">
+                <div class="tool-card main-tool">
+                    <div class="tool-icon">📝</div>
+                    <h3>语言文件翻译</h3>
+                    <p>翻译JSON格式的语言文件，如zh_cn.json等</p>
+                    <div class="tool-features">
+                        <span class="feature">✓ 批量处理</span>
+                        <span class="feature">✓ AI翻译</span>
+                        <span class="feature">✓ 格式保持</span>
+                    </div>
+                    <button class="btn-tool active" onclick="selectTool('language')">使用此工具</button>
+                </div>
+                
+                <div class="tool-card enhanced-tool">
+                    <div class="tool-icon">🔧</div>
+                    <h3>增强版硬编码翻译</h3>
+                    <p>基于LDC指令精确提取并翻译Java字节码中的硬编码字符串</p>
+                    <div class="tool-features">
+                        <span class="feature">✓ LDC精确提取</span>
+                        <span class="feature">✓ 字节码安全</span>
+                        <span class="feature">✓ 智能UI</span>
+                    </div>
+                    <a href="hardcoded-translator-enhanced.html" class="btn-tool enhanced">
+                        使用增强版工具
+                    </a>
+                </div>
+                
+                <div class="tool-card">
+                    <div class="tool-icon">🏗️</div>
+                    <h3>传统硬编码翻译</h3>
+                    <p>使用正则表达式提取class文件中的硬编码字符串</p>
+                    <div class="tool-features">
+                        <span class="feature">✓ 兼容性好</span>
+                        <span class="feature">✓ 简单快速</span>
+                        <span class="feature">✓ 正则匹配</span>
+                    </div>
+                    <a href="hardcoded-translator.html" class="btn-tool">使用传统工具</a>
+                </div>
+            </div>
+        </section>
+
         <!-- 日志区 -->
         <section class="log-section">
             <div class="log-header">
