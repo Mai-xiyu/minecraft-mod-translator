@@ -42,9 +42,7 @@ jobs:
           # 复制文档
           cp LICENSE _site/
           cp README.md _site/
-          cp ENHANCED_TOOL_GUIDE.md _site/
-          cp PROJECT_STRUCTURE.md _site/
-          cp CONTRIBUTING.md _site/
+
           cp 404.html _site/
           
           touch _site/.nojekyll
