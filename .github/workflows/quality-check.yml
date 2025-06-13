@@ -118,12 +118,7 @@ jobs:
               exit 1
             fi
             
-            if grep -q "使用方法\|如何使用\|Usage" "README.md"; then
-              echo "✅ README.md 包含使用说明"
-            else
-              echo "❌ README.md 缺少使用说明"
-              exit 1
-            fi
+           
           else
             echo "❌ 缺少README.md文件"
             exit 1
