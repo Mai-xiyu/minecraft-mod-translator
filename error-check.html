@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>最终错误检查</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <h1>JavaScript错误检查</h1>
+    <div id="results"></div>
+    
+    <h2>测试按钮</h2>
+    <button onclick="testSelectTool()">测试工具选择</button>
+    <button onclick="testInitialization()">测试初始化</button>
+    
+    <script src="script_new.js"></script>
+    <script>
+        function addResult(message, type = 'success') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+
+        function testSelectTool() {
+            try {
+                selectTool('language');
+                addResult('✓ selectTool函数调用成功');
+            } catch (e) {
+                addResult(`✗ selectTool错误: ${e.message}`, 'error');
+            }
+        }
+
+        function testInitialization() {
+            try {
+                if (window.translator) {
+                    addResult('✓ 翻译器已初始化');
+                    
+                    // 测试辅助方法
+                    window.translator.showModal('nonexistent');
+                    addResult('✓ showModal方法正常');
+                    
+                    window.translator.hideModal('nonexistent');
+                    addResult('✓ hideModal方法正常');
+                    
+                    const value = window.translator.getValue('nonexistent');
+                    addResult('✓ getValue方法正常');
+                    
+                    window.translator.setContent('nonexistent', 'test');
+                    addResult('✓ setContent方法正常');
+                    
+                } else {
+                    addResult('⚠ 翻译器未初始化（正常，需要先选择工具）', 'warning');
+                }
+            } catch (e) {
+                addResult(`✗ 初始化测试错误: ${e.message}`, 'error');
+            }
+        }
+
+        // 监听错误
+        window.addEventListener('error', function(e) {
+            addResult(`✗ JavaScript错误: ${e.message} (${e.filename}:${e.lineno})`, 'error');
+        });
+
+        // 页面加载完成测试
+        document.addEventListener('DOMContentLoaded', () => {
+            addResult('✓ 页面加载完成，无立即错误');
+            
+            // 检查关键函数是否定义
+            if (typeof selectTool === 'function') {
+                addResult('✓ selectTool函数已定义');
+            } else {
+                addResult('✗ selectTool函数未定义', 'error');
+            }
+            
+            if (typeof MinecraftModTranslator === 'function') {
+                addResult('✓ MinecraftModTranslator类已定义');
+            } else {
+                addResult('✗ MinecraftModTranslator类未定义', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -18,12 +18,38 @@ class MinecraftModTranslator {
         this.initializeApp();
         this.loadSettings();
         this.checkSponsorPrompt();
-    }
-
-    initializeApp() {
+    }    initializeApp() {
         this.setupEventListeners();
         this.loadBuiltInTerms();
         this.log('系统初始化完成', 'success');
+    }
+
+    // 辅助方法：安全地显示模态框
+    showModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'block';
+        }
+    }    // 辅助方法：安全地隐藏模态框
+    hideModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    // 辅助方法：安全地获取元素值
+    getValue(elementId) {
+        const element = document.getElementById(elementId);
+        return element ? element.value : '';
+    }
+
+    // 辅助方法：安全地设置元素内容
+    setContent(elementId, content) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.innerHTML = content;
+        }
     }
 
     setupEventListeners() {
@@ -31,70 +57,147 @@ class MinecraftModTranslator {
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         
-        uploadArea.addEventListener('click', () => fileInput.click());
-        uploadArea.addEventListener('dragover', this.handleDragOver.bind(this));
-        uploadArea.addEventListener('dragleave', this.handleDragLeave.bind(this));
-        uploadArea.addEventListener('drop', this.handleFileDrop.bind(this));
-        fileInput.addEventListener('change', this.handleFileSelect.bind(this));
+        if (uploadArea) {
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', this.handleDragOver.bind(this));
+            uploadArea.addEventListener('dragleave', this.handleDragLeave.bind(this));
+            uploadArea.addEventListener('drop', this.handleFileDrop.bind(this));
+        }
+        
+        if (fileInput) {
+            fileInput.addEventListener('change', this.handleFileSelect.bind(this));
+        }
         
         // 文件管理
-        document.getElementById('clearFiles').addEventListener('click', this.clearAllFiles.bind(this));
+        const clearFiles = document.getElementById('clearFiles');
+        if (clearFiles) {
+            clearFiles.addEventListener('click', this.clearAllFiles.bind(this));
+        }
 
         // AI接口配置
-        document.getElementById('aiProvider').addEventListener('change', this.handleProviderChange.bind(this));
-        document.getElementById('apiKey').addEventListener('input', this.handleApiKeyInput.bind(this));
-        document.getElementById('customApiUrl').addEventListener('input', this.handleApiKeyInput.bind(this));
+        const aiProvider = document.getElementById('aiProvider');
+        if (aiProvider) {
+            aiProvider.addEventListener('change', this.handleProviderChange.bind(this));
+        }
+        
+        const apiKey = document.getElementById('apiKey');
+        if (apiKey) {
+            apiKey.addEventListener('input', this.handleApiKeyInput.bind(this));
+        }
+        
+        const customApiUrl = document.getElementById('customApiUrl');
+        if (customApiUrl) {
+            customApiUrl.addEventListener('input', this.handleApiKeyInput.bind(this));
+        }
         
         // 操作按钮
-        document.getElementById('startTranslation').addEventListener('click', this.startTranslation.bind(this));
-        document.getElementById('showHistory').addEventListener('click', this.showHistory.bind(this));
-        document.getElementById('customTerms').addEventListener('click', this.showCustomTerms.bind(this));
-        document.getElementById('gotoHardcodedTool').addEventListener('click', this.gotoHardcodedTool.bind(this));
-        document.getElementById('diagnostics').addEventListener('click', this.runDiagnostics.bind(this));
-
-        // 弹窗相关
+        const startTranslation = document.getElementById('startTranslation');
+        if (startTranslation) {
+            startTranslation.addEventListener('click', this.startTranslation.bind(this));
+        }
+          const showHistory = document.getElementById('showHistory');
+        if (showHistory) {
+            showHistory.addEventListener('click', this.showHistory.bind(this));
+        }
+        
+        // 其他按钮
+        const customTerms = document.getElementById('customTerms');
+        if (customTerms) {
+            customTerms.addEventListener('click', this.showCustomTerms.bind(this));
+        }
+        
+        const gotoHardcodedTool = document.getElementById('gotoHardcodedTool');
+        if (gotoHardcodedTool) {
+            gotoHardcodedTool.addEventListener('click', this.gotoHardcodedTool.bind(this));
+        }
+          const diagnostics = document.getElementById('diagnostics');
+        if (diagnostics) {
+            diagnostics.addEventListener('click', this.runDiagnostics.bind(this));
+        }        // 弹窗相关
         this.setupModalEventListeners();
 
         // 其他功能
-        document.getElementById('clearLog').addEventListener('click', this.clearLog.bind(this));
-        document.getElementById('downloadResult').addEventListener('click', this.downloadResult.bind(this));
+        const clearLog = document.getElementById('clearLog');
+        if (clearLog) {
+            clearLog.addEventListener('click', this.clearLog.bind(this));
+        }
+        
+        const downloadResult = document.getElementById('downloadResult');
+        if (downloadResult) {
+            downloadResult.addEventListener('click', this.downloadResult.bind(this));
+        }
         
         // 临时测试功能
-        document.getElementById('testPreview').addEventListener('click', this.testPreviewFunction.bind(this));
-    }
-
-    setupModalEventListeners() {
-        // 赞助弹窗
-        document.getElementById('closeSponsorModal').addEventListener('click', () => {
-            document.getElementById('sponsorModal').style.display = 'none';
-        });
-        document.getElementById('noThanks').addEventListener('click', () => {
-            document.getElementById('sponsorModal').style.display = 'none';
-        });
-        document.getElementById('alreadySponsored').addEventListener('click', () => {
-            localStorage.setItem('sponsored', 'true');
-            document.getElementById('sponsorModal').style.display = 'none';
-            this.log('感谢您的支持！', 'success');
-        });
+        const testPreview = document.getElementById('testPreview');
+        if (testPreview) {
+            testPreview.addEventListener('click', this.testPreviewFunction.bind(this));
+        }
+    }    setupModalEventListeners() {
+        // 赞助弹窗        const closeSponsorModal = document.getElementById('closeSponsorModal');
+        if (closeSponsorModal) {
+            closeSponsorModal.addEventListener('click', () => {
+                this.hideModal('sponsorModal');
+            });
+        }
+        
+        const noThanks = document.getElementById('noThanks');
+        if (noThanks) {
+            noThanks.addEventListener('click', () => {
+                this.hideModal('sponsorModal');
+            });
+        }
+        
+        const alreadySponsored = document.getElementById('alreadySponsored');
+        if (alreadySponsored) {
+            alreadySponsored.addEventListener('click', () => {
+                localStorage.setItem('sponsored', 'true');
+                this.hideModal('sponsorModal');
+                this.log('感谢您的支持！', 'success');
+            });
+        }
 
         // 策略选择弹窗
-        document.getElementById('confirmStrategy').addEventListener('click', this.confirmStrategy.bind(this));
+        const confirmStrategy = document.getElementById('confirmStrategy');
+        if (confirmStrategy) {
+            confirmStrategy.addEventListener('click', this.confirmStrategy.bind(this));
+        }
 
-        // 术语表弹窗
-        document.getElementById('closeTermsModal').addEventListener('click', () => {
-            document.getElementById('termsModal').style.display = 'none';
-        });
-        document.getElementById('saveTerms').addEventListener('click', this.saveCustomTerms.bind(this));
-        document.getElementById('loadTermsFile').addEventListener('click', () => {
-            document.getElementById('termsFileInput').click();
-        });
-        document.getElementById('termsFileInput').addEventListener('change', this.loadTermsFromFile.bind(this));
+        // 术语表弹窗        const closeTermsModal = document.getElementById('closeTermsModal');
+        if (closeTermsModal) {
+            closeTermsModal.addEventListener('click', () => {
+                this.hideModal('termsModal');
+            });
+        }
+        
+        const saveTerms = document.getElementById('saveTerms');
+        if (saveTerms) {
+            saveTerms.addEventListener('click', this.saveCustomTerms.bind(this));
+        }
+        
+        const loadTermsFile = document.getElementById('loadTermsFile');
+        if (loadTermsFile) {
+            loadTermsFile.addEventListener('click', () => {
+                const termsFileInput = document.getElementById('termsFileInput');
+                if (termsFileInput) termsFileInput.click();
+            });
+        }
+        
+        const termsFileInput = document.getElementById('termsFileInput');
+        if (termsFileInput) {
+            termsFileInput.addEventListener('change', this.loadTermsFromFile.bind(this));
+        }
 
-        // 历史记录弹窗
-        document.getElementById('closeHistoryModal').addEventListener('click', () => {
-            document.getElementById('historyModal').style.display = 'none';
-        });
-        document.getElementById('clearHistory').addEventListener('click', this.clearHistory.bind(this));
+        // 历史记录弹窗        const closeHistoryModal = document.getElementById('closeHistoryModal');
+        if (closeHistoryModal) {
+            closeHistoryModal.addEventListener('click', () => {
+                this.hideModal('historyModal');
+            });
+        }
+        
+        const clearHistory = document.getElementById('clearHistory');
+        if (clearHistory) {
+            clearHistory.addEventListener('click', this.clearHistory.bind(this));
+        }
     }
 
     handleDragOver(e) {
@@ -296,14 +399,18 @@ class MinecraftModTranslator {
             originalPath: englishFileInfo.directoryPath,
             modId: modId
         };
-    }
-
-    // 更新文件列表显示
+    }    // 更新文件列表显示
     updateFilesList() {
         const filesList = document.getElementById('filesList');
         const filesContainer = document.getElementById('filesContainer');
         const totalFiles = document.getElementById('totalFiles');
         const totalSize = document.getElementById('totalSize');
+        
+        // 检查必要的DOM元素是否存在
+        if (!filesList || !filesContainer || !totalFiles || !totalSize) {
+            // 如果必要的DOM元素不存在，直接返回
+            return;
+        }
         
         if (this.uploadedFiles.length === 0) {
             filesList.style.display = 'none';
@@ -387,9 +494,8 @@ class MinecraftModTranslator {
 
     // 检查翻译准备状态
     checkTranslationReady() {
-        const hasFiles = this.uploadedFiles.length > 0 || this.currentFile;
-        const hasApiKey = document.getElementById('apiKey').value.trim() !== '';
-        const provider = document.getElementById('aiProvider').value;
+        const hasFiles = this.uploadedFiles.length > 0 || this.currentFile;        const hasApiKey = this.getValue('apiKey').trim() !== '';
+        const provider = this.getValue('aiProvider');
         const startButton = document.getElementById('startTranslation');
         
         if (hasFiles) {
@@ -480,11 +586,9 @@ class MinecraftModTranslator {
                 }
             }
             if (hasChineseFiles) break;
-        }
-
-        if (hasChineseFiles) {
+        }        if (hasChineseFiles) {
             // 显示策略选择弹窗
-            document.getElementById('strategyModal').style.display = 'block';
+            this.showModal('strategyModal');
         } else {
             // 直接开始翻译
             await this.executeBatchTranslation('overwrite');
@@ -958,7 +1062,7 @@ class MinecraftModTranslator {
             let strategy = 'overwrite';
             if (hasChineseFiles) {
                 // 显示策略选择弹窗
-                document.getElementById('strategyModal').style.display = 'block';
+                this.showModal('strategyModal');
                 return; // 等待用户选择策略
             }
             
@@ -1028,7 +1132,7 @@ class MinecraftModTranslator {
     }    // 确认策略
     confirmStrategy() {
         const strategy = document.querySelector('input[name="strategy"]:checked').value;
-        document.getElementById('strategyModal').style.display = 'none';
+        this.hideModal('strategyModal');
         
         // 判断是批量翻译还是单文件翻译
         if (this.uploadedFiles.length > 1 || (this.uploadedFiles.length === 1 && !this.currentFile)) {
@@ -1064,10 +1168,9 @@ class MinecraftModTranslator {
             }
         }
         return texts;
-    }    async translateTexts(texts) {
-        const apiKey = document.getElementById('apiKey').value;
-        const provider = document.getElementById('aiProvider').value;
-        const customApiUrl = document.getElementById('customApiUrl').value;
+    }    async translateTexts(texts) {        const apiKey = this.getValue('apiKey');
+        const provider = this.getValue('aiProvider');
+        const customApiUrl = this.getValue('customApiUrl');
         
         if (!apiKey) {
             throw new Error('请先配置API密钥');
@@ -1408,7 +1511,7 @@ ${texts.join('\n')}
 
     // 自定义术语管理
     showCustomTerms() {
-        document.getElementById('termsModal').style.display = 'block';
+        this.showModal('termsModal');
     }
 
     saveCustomTerms() {
@@ -1421,7 +1524,7 @@ ${texts.join('\n')}
 
     // 历史记录管理
     showHistory() {
-        document.getElementById('historyModal').style.display = 'block';
+        this.showModal('historyModal');
     }
 
     saveToHistory(inputName, outputName) {
@@ -1472,7 +1575,7 @@ ${texts.join('\n')}
         if (this.usageCount % 5 === 0) {
             const sponsored = localStorage.getItem('sponsored');
             if (sponsored !== 'true') {
-                document.getElementById('sponsorModal').style.display = 'block';
+                this.showModal('sponsorModal');
             }
         }
     }
@@ -1489,7 +1592,7 @@ ${texts.join('\n')}
     }
 
     clearLog() {
-        document.getElementById('logContent').innerHTML = '';
+        this.setContent('logContent', '');
     }
 
     // 诊断功能
@@ -1544,49 +1647,12 @@ ${texts.join('\n')}
     }
 }
 
-// 初始化应用
+// 初始化应用（延迟初始化，防止DOM元素不存在时出错）
 document.addEventListener('DOMContentLoaded', () => {
-    window.translator = new MinecraftModTranslator();
+    // 不立即初始化翻译器，等用户选择工具后再初始化
 });
 
 // 工具选择功能
-function selectTool(toolType) {
-    if (toolType === 'language') {
-        // 显示语言文件翻译工具
-        const uploadSection = document.querySelector('.upload-section');
-        const translateSection = document.querySelector('.translate-section');
-        const configSection = document.querySelector('.config-section');
-        const batchSection = document.querySelector('.batch-section');
-        
-        if (uploadSection) uploadSection.style.display = 'block';
-        if (translateSection) translateSection.style.display = 'block';
-        if (configSection) configSection.style.display = 'block';
-        if (batchSection) batchSection.style.display = 'block';
-        
-        // 隐藏工具选择区
-        const toolsSection = document.querySelector('.tools-section');
-        if (toolsSection) toolsSection.style.display = 'none';
-        
-        // 更新页面标题
-        document.title = 'Minecraft模组语言文件翻译 - 当前工具';
-    }
-}
-
-// 页面加载时默认隐藏主工具区域
-document.addEventListener('DOMContentLoaded', () => {
-    // 默认隐藏语言文件翻译工具
-    const uploadSection = document.querySelector('.upload-section');
-    const translateSection = document.querySelector('.translate-section');
-    const configSection = document.querySelector('.config-section');
-    const batchSection = document.querySelector('.batch-section');
-    
-    if (uploadSection) uploadSection.style.display = 'none';
-    if (translateSection) translateSection.style.display = 'none';
-    if (configSection) configSection.style.display = 'none';
-    if (batchSection) batchSection.style.display = 'none';
-});
-
-// 工具选择函数
 function selectTool(toolType) {
     if (toolType === 'language') {
         // 显示语言文件翻译工具
@@ -1611,8 +1677,25 @@ function selectTool(toolType) {
         if (uploadSection) {
             uploadSection.scrollIntoView({ behavior: 'smooth' });
         }
+        
+        // 更新页面标题
+        document.title = 'Minecraft模组语言文件翻译 - 当前工具';
     } else if (toolType === 'hardcoded') {
         // 跳转到硬编码翻译工具
         window.open('hardcoded-translator-enhanced.html', '_blank');
     }
 }
+
+// 页面加载时默认隐藏主工具区域
+document.addEventListener('DOMContentLoaded', () => {
+    // 默认隐藏语言文件翻译工具
+    const uploadSection = document.querySelector('.upload-section');
+    const translateSection = document.querySelector('.translate-section');
+    const configSection = document.querySelector('.config-section');
+    const batchSection = document.querySelector('.batch-section');
+    
+    if (uploadSection) uploadSection.style.display = 'none';
+    if (translateSection) translateSection.style.display = 'none';
+    if (configSection) configSection.style.display = 'none';
+    if (batchSection) batchSection.style.display = 'none';
+});

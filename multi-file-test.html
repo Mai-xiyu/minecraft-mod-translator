@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多文件支持测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .test-section { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 4px; background: #007bff; color: white; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .file-drop { border: 2px dashed #ccc; padding: 40px; text-align: center; margin: 20px 0; border-radius: 8px; }
+        .file-drop.dragover { border-color: #007bff; background: #f8f9fa; }
+        input[type="file"] { margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>🎮 多文件支持功能测试</h1>
+    
+    <div class="test-section">
+        <h2>功能状态检查</h2>
+        <div id="statusResults"></div>
+        <button onclick="checkMultiFileSupport()">检查多文件支持</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>文件上传测试</h2>
+        <p>请选择多个.jar文件进行测试：</p>
+        <input type="file" id="testFileInput" accept=".jar" multiple>
+        <div class="file-drop" id="testDropArea">
+            <p>或拖拽多个JAR文件到这里</p>
+        </div>
+        <div id="uploadResults"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>模拟多文件处理</h2>
+        <button onclick="simulateMultipleFiles()">模拟多文件处理</button>
+        <div id="simulationResults"></div>
+    </div>
+
+    <script src="script_new.js"></script>
+    <script>
+        function addStatus(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            container.appendChild(div);
+        }
+
+        function checkMultiFileSupport() {
+            addStatus('statusResults', '开始检查多文件支持...', 'info');
+            
+            // 检查file input是否支持multiple
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.multiple = true;
+            
+            if (fileInput.multiple) {
+                addStatus('statusResults', '✓ 浏览器支持文件多选', 'success');
+            } else {
+                addStatus('statusResults', '✗ 浏览器不支持文件多选', 'error');
+            }
+            
+            // 检查拖拽API支持
+            if ('FileReader' in window && 'DataTransfer' in window) {
+                addStatus('statusResults', '✓ 浏览器支持拖拽上传', 'success');
+            } else {
+                addStatus('statusResults', '✗ 浏览器不支持拖拽上传', 'error');
+            }
+            
+            // 检查关键函数是否存在
+            if (typeof MinecraftModTranslator === 'function') {
+                const translator = new MinecraftModTranslator();
+                
+                if (typeof translator.processMultipleFiles === 'function') {
+                    addStatus('statusResults', '✓ processMultipleFiles方法存在', 'success');
+                } else {
+                    addStatus('statusResults', '✗ processMultipleFiles方法不存在', 'error');
+                }
+                
+                if (typeof translator.handleFileSelect === 'function') {
+                    addStatus('statusResults', '✓ handleFileSelect方法存在', 'success');
+                } else {
+                    addStatus('statusResults', '✗ handleFileSelect方法不存在', 'error');
+                }
+                
+                if (typeof translator.updateFilesList === 'function') {
+                    addStatus('statusResults', '✓ updateFilesList方法存在', 'success');
+                } else {
+                    addStatus('statusResults', '✗ updateFilesList方法不存在', 'error');
+                }
+                
+            } else {
+                addStatus('statusResults', '✗ MinecraftModTranslator类不存在', 'error');
+            }
+        }
+
+        function simulateMultipleFiles() {
+            addStatus('simulationResults', '开始模拟多文件处理...', 'info');
+            
+            try {
+                // 创建模拟文件
+                const mockFiles = [
+                    { name: 'mod1.jar', size: 1024000, type: 'application/java-archive' },
+                    { name: 'mod2.jar', size: 2048000, type: 'application/java-archive' },
+                    { name: 'mod3.jar', size: 512000, type: 'application/java-archive' }
+                ];
+                
+                addStatus('simulationResults', `创建了 ${mockFiles.length} 个模拟文件`, 'info');
+                
+                // 测试文件验证逻辑
+                for (const file of mockFiles) {
+                    if (file.name.toLowerCase().endsWith('.jar')) {
+                        addStatus('simulationResults', `✓ ${file.name} 格式验证通过`, 'success');
+                    } else {
+                        addStatus('simulationResults', `✗ ${file.name} 格式验证失败`, 'error');
+                    }
+                    
+                    const maxSize = 30 * 1024 * 1024; // 30MB
+                    if (file.size <= maxSize) {
+                        addStatus('simulationResults', `✓ ${file.name} 大小验证通过 (${Math.round(file.size/1024)}KB)`, 'success');
+                    } else {
+                        addStatus('simulationResults', `✗ ${file.name} 大小超限`, 'error');
+                    }
+                }
+                
+            } catch (e) {
+                addStatus('simulationResults', `✗ 模拟测试失败: ${e.message}`, 'error');
+            }
+        }
+
+        // 设置测试文件输入
+        document.getElementById('testFileInput').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            addStatus('uploadResults', `选择了 ${files.length} 个文件`, 'info');
+            
+            files.forEach(file => {
+                addStatus('uploadResults', `- ${file.name} (${Math.round(file.size/1024)}KB)`, 'info');
+            });
+        });
+
+        // 设置拖拽测试
+        const dropArea = document.getElementById('testDropArea');
+        
+        dropArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            dropArea.classList.add('dragover');
+        });
+        
+        dropArea.addEventListener('dragleave', function(e) {
+            dropArea.classList.remove('dragover');
+        });
+        
+        dropArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            dropArea.classList.remove('dragover');
+            
+            const files = Array.from(e.dataTransfer.files);
+            addStatus('uploadResults', `拖拽了 ${files.length} 个文件`, 'info');
+            
+            files.forEach(file => {
+                addStatus('uploadResults', `- ${file.name} (${Math.round(file.size/1024)}KB)`, 'info');
+            });
+        });
+
+        // 页面加载时自动检查
+        document.addEventListener('DOMContentLoaded', () => {
+            addStatus('statusResults', '页面加载完成，准备测试多文件支持', 'info');
+        });
+    </script>
+</body>
+</html>

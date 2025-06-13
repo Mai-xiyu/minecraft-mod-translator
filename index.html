@@ -27,16 +27,52 @@
             <!-- 文件上传区 -->
             <section class="upload-section">
                 <div class="upload-area" id="uploadArea">
-                    <div class="upload-icon">📁</div>
-                    <div class="upload-text">
+                    <div class="upload-icon">📁</div>                    <div class="upload-text">
                         <h3>拖放或点击上传JAR文件</h3>
-                        <p>支持Minecraft模组文件，最大30MB</p>
+                        <p>支持单个或多个Minecraft模组文件，单个文件最大30MB</p>
                     </div>
-                    <input type="file" id="fileInput" accept=".jar" style="display: none;">
-                </div>
-                <div class="file-info" id="fileInfo" style="display: none;">
+                    <input type="file" id="fileInput" accept=".jar" multiple style="display: none;">
+                </div>                <div class="file-info" id="fileInfo" style="display: none;">
                     <span class="file-name" id="fileName"></span>
                     <span class="file-size" id="fileSize"></span>
+                </div>
+                  <!-- 文件管理区 -->
+                <div class="file-management" id="fileManagement" style="display: none;">
+                    <div class="uploaded-files-list" id="uploadedFilesList"></div>
+                    <div class="file-actions">
+                        <button id="clearFiles" class="btn-secondary small">清空所有文件</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 批量文件处理区 -->
+            <section class="batch-section" id="batchSection" style="display: none;">
+                <h3>📦 批量处理</h3>
+                <div class="batch-files" id="filesList" style="display: none;">
+                    <div class="batch-stats">
+                        <span>已选择 <strong id="totalFiles">0</strong> 个文件</span>
+                        <span>总大小 <strong id="totalSize">0 KB</strong></span>
+                    </div>
+                    <div class="files-container" id="filesContainer"></div>
+                </div>
+                
+                <!-- 批量策略选择 -->
+                <div class="batch-strategy" id="batchStrategy" style="display: none;">
+                    <h4>翻译策略</h4>
+                    <div class="strategy-options">
+                        <label>
+                            <input type="radio" name="strategy" value="overwrite" checked>
+                            覆盖现有中文文件
+                        </label>
+                        <label>
+                            <input type="radio" name="strategy" value="merge">
+                            合并翻译（保留已有翻译）
+                        </label>
+                        <label>
+                            <input type="radio" name="strategy" value="skip">
+                            跳过已有中文文件
+                        </label>
+                    </div>
                 </div>
             </section>
 
@@ -125,7 +161,7 @@
                         <span class="feature">✓ AI翻译</span>
                         <span class="feature">✓ 格式保持</span>
                     </div>
-                    <button class="btn-tool active" onclick="selectTool('language')">使用此工具</button>
+                    <button class="btn-tool active" onclick="selectTool('language')"> 使用此工具</button>
                 </div>
                 
                 <div class="tool-card enhanced-tool">
@@ -251,6 +287,6 @@
 
     <!-- JavaScript依赖 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="script.js"></script>
+    <script src="script_new.js"></script>
 </body>
 </html>
