@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -165,4 +166,173 @@
         </div>
     </div>
 </body>
+=======
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>页面重定向 - Minecraft模组翻译工具</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .redirect-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+        }
+        .loading {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px 0;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .manual-links {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .manual-links a {
+            display: inline-block;
+            margin: 8px;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        .manual-links a:hover {
+            background: #5a6dd8;
+        }
+        .debug-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 12px;
+            text-align: left;
+        }
+    </style>
+    <script>
+        // GitHub Pages SPA 路由处理
+        console.log('404页面加载，开始路由处理...');
+        
+        const path = window.location.pathname;
+        const search = window.location.search;
+        const hash = window.location.hash;
+        
+        console.log('当前路径信息:', {
+            path: path,
+            search: search,
+            hash: hash,
+            fullUrl: window.location.href
+        });
+        
+        function redirect() {
+            let targetUrl = null;
+            
+            // 检查是否访问硬编码工具
+            if (path.includes('hardcoded-translator.html') || search.includes('page=hardcoded') || hash.includes('hardcoded')) {
+                // 尝试重定向到硬编码工具页面
+                if (window.location.hostname.includes('github.io')) {
+                    targetUrl = '/minecraft-mod-translator/hardcoded-translator.html';
+                } else {
+                    targetUrl = './hardcoded-translator.html';
+                }
+                console.log('检测到硬编码工具访问，重定向到:', targetUrl);
+            } else {
+                // 其他情况重定向到主页
+                if (window.location.hostname.includes('github.io')) {
+                    targetUrl = '/minecraft-mod-translator/';
+                } else {
+                    targetUrl = './index.html';
+                }
+                console.log('重定向到主页:', targetUrl);
+            }
+            
+            if (targetUrl) {
+                // 添加时间戳避免缓存问题
+                const separator = targetUrl.includes('?') ? '&' : '?';
+                const finalUrl = `${targetUrl}${separator}redirected=true&t=${Date.now()}`;
+                
+                console.log('最终重定向URL:', finalUrl);
+                
+                // 延迟重定向，让用户看到加载提示
+                setTimeout(() => {
+                    try {
+                        window.location.replace(finalUrl);
+                    } catch (error) {
+                        console.error('重定向失败:', error);
+                        window.location.href = finalUrl;
+                    }
+                }, 2000);
+                
+                return finalUrl;
+            }
+            
+            return null;
+        }
+        
+        // 页面加载后立即执行重定向
+        document.addEventListener('DOMContentLoaded', function() {
+            const redirectUrl = redirect();
+            
+            // 更新页面显示信息
+            document.getElementById('currentUrl').textContent = window.location.href;
+            document.getElementById('targetUrl').textContent = redirectUrl || '未确定';
+            document.getElementById('hostname').textContent = window.location.hostname;
+            document.getElementById('pathname').textContent = window.location.pathname;
+        });
+        
+        // 立即执行重定向逻辑（不等待DOM加载）
+        redirect();
+    </script>
+</head>
+<body>
+    <div class="redirect-container">
+        <div class="loading">🔄 页面跳转中...</div>
+        <div class="spinner"></div>
+        <p>正在为您重定向到正确的页面，请稍候...</p>
+        
+        <div class="manual-links">
+            <p>如果没有自动跳转，请手动选择：</p>
+            <a href="/minecraft-mod-translator/">🏠 主工具页面</a>
+            <a href="/minecraft-mod-translator/hardcoded-translator.html">🔧 硬编码工具</a>
+        </div>
+        
+        <div class="debug-info">
+            <strong>调试信息:</strong><br>
+            当前URL: <span id="currentUrl"></span><br>
+            目标URL: <span id="targetUrl"></span><br>
+            主机名: <span id="hostname"></span><br>
+            路径: <span id="pathname"></span>
+        </div>
+    </div>
+</body>
+>>>>>>> a9bb08ca047db4f99c3ae4b7b62789dc4a0180ef
 </html>
